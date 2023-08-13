@@ -1,0 +1,46 @@
+:root {
+    --dark-background: #1e2124;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
+    -webkit-user-select: none;
+}
+
+#root {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    cursor: default;
+    -webkit-user-select: none;
+}
+
+@media (prefers-color-scheme: light) {
+    #root {
+        background: white; /* TODO: select color for light mode */
+        color: black;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    #root {
+        background: var(--dark-background);
+        color: lightgray;
+    }
+}
+
+.draggable {
+    -webkit-app-region: drag;
+}
+
+.draggable > * {
+    -webkit-app-region: no-drag;
+}
+
