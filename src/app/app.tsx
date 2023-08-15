@@ -4,7 +4,7 @@ import "./static/fonts/open-sans.css"; // open sans font stylesheet
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import electronIcon from "./static/svg/electron.png";
+import electronIcon from "./static/img/electron.png";
 
 import {createRoot} from "react-dom/client";
 import {createMemoryRouter, RouterProvider, Outlet} from "react-router-dom";
