@@ -13,7 +13,7 @@ if(require('electron-squirrel-startup')) {
 
 // if a secondary instance tries to start primary instance's window is focused
 if(!app.requestSingleInstanceLock()) {
-    app.focus();
+    app.quit();
 }
 
 // executes application on startup / user login with --hidden argument
@@ -91,8 +91,8 @@ const createWindow = (): void => {
 const createTray = (): void => {
 
     const iconPath = process.env.NODE_ENV === "development" ?
-        path.resolve('src/app/static/img/electron.png') :
-        path.resolve('app.ico');
+        path.resolve('src/static/img/electron.png') :
+        path.resolve(process.resourcesPath, 'static/img/electron.png');
     
     const icon = nativeImage.createFromPath(iconPath);
     tray = new Tray(icon.resize({width: 22}));

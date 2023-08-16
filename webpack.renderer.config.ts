@@ -12,9 +12,9 @@ rules.push({
 rules.push({
   test: /\.(svg|png|jpg|gif)$/,
   include: [
-    path.resolve(__dirname, "src/app")
+    path.resolve(__dirname, "./src/")
   ],
-  type: "asset/inline"
+  type: "asset/inline",
 });
 
 export const rendererConfig: Configuration = {
