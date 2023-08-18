@@ -1,14 +1,16 @@
-import "./static/css/main.css"; // base stylesheet
-import "./static/css/tailwind.css"; // tailwind stylesheet
-import "./static/fonts/open-sans.css"; // open sans font stylesheet
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import electronIcon from "./static/img/electron.png";
-
+import React from "react";
 import {createRoot} from "react-dom/client";
 import {createMemoryRouter, RouterProvider, Outlet} from "react-router-dom";
+import "./static/fonts/material-icons.css"; // material icons stylesheet
+import "./static/fonts/open-sans.css"; // open sans font stylesheet
+import "./static/css/main.css"; // base stylesheet
+import "./static/css/tailwind.css"; // tailwind stylesheet
 
+import electronIcon from "./static/img/electron.png";
+
+
+// importing views
+import WelcomePage from "./views/WelcomePage.jsx";
 
 function WindowLayout() {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -26,7 +28,7 @@ function WindowLayout() {
         <>
             {/* Title Bar */}
             <div id={"title-bar"} className={"flex p-2 pb-0 items-center justify-between draggable"} style={{height: '42px'}}>
-                <div className={"flex items-center"}>
+                <div className={"flex items-center invisible"}>
                     {/*  Window Icon  */}
                     <img src={electronIcon} className={"m-1 ml-2"} width={'20px'} height={'20px'} id={"window-icon"} alt={""} />
                     {/*  Window Title  */}
@@ -56,7 +58,10 @@ export function render() {
             path: "/",
             element: <WindowLayout/>,
             children: [
-
+                {
+                    path: "",
+                    element: <WelcomePage/>
+                }
             ]
         }
     ]);

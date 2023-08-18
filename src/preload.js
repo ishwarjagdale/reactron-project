@@ -5,5 +5,7 @@ import {contextBridge, ipcRenderer} from "electron";
 contextBridge.exposeInMainWorld('electronAPI', {
     closeWindow: () => ipcRenderer.send('closeWindow'),
     maximizeWindow: () => ipcRenderer.send('maximizeWindow'),
-    minimizeWindow: () => ipcRenderer.send('minimizeWindow')
+    minimizeWindow: () => ipcRenderer.send('minimizeWindow'),
+
+    getScreenTime: (callback) => ipcRenderer.on('screenTime', callback)
 })
