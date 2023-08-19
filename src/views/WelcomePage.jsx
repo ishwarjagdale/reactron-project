@@ -3,39 +3,42 @@ import {useEffect, useState} from "react";
 import "../static/fonts/material-icons.css"; // material icons stylesheet
 import "../static/fonts/open-sans.css"; // open sans font stylesheet
 import "../static/css/main.css"; // base stylesheet
-import "../static/css/tailwind.css"; // tailwind stylesheet
+import "../static/css/tailwind.css";
+import {Link} from "react-router-dom"; // tailwind stylesheet
 
 
 function WelcomePage() {
 
 	const [screenTime, setScreenTime] = useState({
-		hour: 0, minutes: 0, seconds: 0
+		hours: 0, minutes: 0, seconds: 0
 	});
 
 	const updateScreenTIme = (_event, value) => {
 		console.log(value);
-		setScreenTime(value);
+		setScreenTime(JSON.parse(value));
 	}
 
 	useEffect(() => {
-		window.electronAPI.getScreenTime(updateScreenTIme);
+		window.electronAPI.getScreenTime(updateScreenTIme).then(r => {
+			setScreenTime(JSON.parse(r));
+		});
 	}, [])
 
 	useEffect(() => {
 		const timer = setInterval(() => {
-			let {hour, minutes, seconds} = screenTime;
+			let {hours, minutes, seconds} = screenTime;
 			seconds += 1;
 			if(seconds === 60) {
 				minutes += 1;
 				seconds = 0;
 			}
 			if(minutes === 60) {
-				hour += 1;
+				hours += 1;
 				minutes = 0;
 			}
-			hour %= 24;
+			hours %= 24;
 
-			setScreenTime({hour: hour, minutes: minutes, seconds: seconds});
+			setScreenTime({hours: hours, minutes: minutes, seconds: seconds});
 		}, 1000);
 
 		return () => {
@@ -44,7 +47,18 @@ function WelcomePage() {
 
 	}, [screenTime]);
 
-
+	let greet;
+	const hour = new Date().getHours();
+	console.log(hour);
+	if(hour >= 5 && hour < 12) {
+		greet = "Good morning!";
+	} else if(hour >= 12 && hour < 18) {
+		greet = "Good afternoon!";
+	} else if(hour >= 18) {
+		greet = "Good evening!";
+	} else {
+		greet = "Great midnight!";
+	}
 
 	return (
 		<div className={"flex items-center justify-center p-12 w-full h-full"}>
@@ -55,21 +69,21 @@ function WelcomePage() {
 						{/*<h1 className={"text-2xl"}>Screen Time</h1>*/}
 					</div>
 					<div className={"flex items-start font-[500] px-2 leading-[1]"} style={{fontSize: "9rem"}}>
-						<span className={""}>{ screenTime.hour >= 10 ? Number.parseInt(screenTime.hour / 10) : 0 }</span>
-						<span className={""}>{ screenTime.hour >= 0 ? screenTime.hour % 10 : screenTime.hour }</span>
+						<span className={""}>{ Number.parseInt((screenTime.hours / 10).toString()) }</span>
+						<span className={""}>{ screenTime.hours % 10 }</span>
 						<span className={"font-normal leading-[0.8] px-2"}>:</span>
-						<span className={""}>{ screenTime.minutes >= 10 ? Number.parseInt(screenTime.minutes / 10) : 0 }</span>
-						<span className={""}>{ screenTime.minutes >= 0 ? screenTime.minutes % 10 : screenTime.minutes }</span>
+						<span className={""}>{ Number.parseInt((screenTime.minutes / 10).toString()) }</span>
+						<span className={""}>{ screenTime.minutes % 10 }</span>
 						<span className={"font-normal leading-[0.8] px-2"}>:</span>
-						<span className={"text-gray-600"}>{ screenTime.seconds >= 10 ? Number.parseInt(screenTime.seconds / 10) : 0 }</span>
-						<span className={"text-gray-600"}>{ screenTime.seconds >= 0 ? screenTime.seconds % 10 : screenTime.seconds }</span>
+						<span className={"text-gray-600"}>{ Number.parseInt((screenTime.seconds / 10).toString()) }</span>
+						<span className={"text-gray-600"}>{ screenTime.seconds % 10 }</span>
 					</div>
 					<span className={"p-2 text-md text-gray-400"}>Total screen time tracked today</span>
 				</div>
 				<div className={"flex flex-col items-center p-4"}>
-					<span className={"text-2xl p-1"}>Good morning, <b>Ishwar</b></span>
+					<span className={"text-2xl p-1"}>{ greet }, <b className={"font-mono text-xl"}>&#60;insert name&#62;</b></span>
 					<span className={"text-gray-400 text-sm"}>Let's see how you're doing</span>
-					<button className="material-icons pt-8 text-gray-400 hover:text-white pb-2">keyboard_double_arrow_down</button>
+					<Link to={"/dashboard"} className="material-icons pt-8 text-gray-400 hover:text-white pb-2">keyboard_double_arrow_down</Link>
 				</div>
 			</div>
 		</div>

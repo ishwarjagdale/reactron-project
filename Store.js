@@ -5,6 +5,7 @@ import Logger from "./Logger";
 
 class Store {
     constructor(defaults) {
+        this.logger = new Logger();
         this.defaults = defaults;
         this.db = path.resolve(app.getPath('userData'), "reactronStore.json");
         if(!fs.existsSync(this.db))
@@ -26,7 +27,7 @@ class Store {
         try {
             data = JSON.parse(fs.readFileSync(this.db, {encoding: "utf-8"}));
         } catch (e) {
-            Logger.log(e);
+            this.logger.log(e);
             data = this.defaults || {}
         }
         return data;
@@ -39,17 +40,17 @@ class Store {
             });
             return true;
         } catch (e) {
-            Logger.log(e)
+            this.logger.log(e)
             return false;
         }
     }
     
-    getObj(key) {
+    getObj(key, def= {}) {
         try {
-            return this.read()[key] || {};
+            return this.read()[key] || def;
         } catch (e) {
-            Logger.log(e);
-            return {};
+            this.logger.log(e);
+            return def;
         }
     }
     
@@ -66,7 +67,7 @@ class Store {
             
             return true;
         } catch (e) {
-            Logger.log(e);
+            this.logger.log(e);
             return false;
         }
     }

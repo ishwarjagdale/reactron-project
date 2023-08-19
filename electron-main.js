@@ -25,6 +25,8 @@ app.setLoginItemSettings({
 let mainWindow;
 let tray;
 let store;
+let dayListener;
+let logger;
 
 
 /**
@@ -99,7 +101,7 @@ const createTray = () => {
         }
     ]));
     tray.on('click', () => {
-        Logger.log(BrowserWindow.getAllWindows().length);
+        logger.log(BrowserWindow.getAllWindows().length);
         if(BrowserWindow.getAllWindows().length !== 0) mainWindow.show();
         else {
             if(!mainWindow) createWindow();
@@ -117,17 +119,27 @@ app.on('ready', () => {
         'windowSize': [1400, 800],
         'screenTime': {}
     });
+    logger = new Logger();
 
     // adding a screenTime log if empty
+    LogScreenTime("resume");
 
-    const screenTime = store.getObj('screenTime');
-    const date = getDate();
-    if (date in screenTime) {
-        if(!screenTime[date].length) screenTime[date] = [Date.now()];
-    } else {
-        screenTime[date] = [Date.now()]
-    }
-    store.setObj('screenTime', screenTime);
+    if(!dayListener)
+    dayListener = setTimeout(() => {
+
+        setInterval(() => {
+            let screenTime = store.getObj('screenTime');
+            screenTime.currentST = 0;
+            store.setObj(screenTime);
+        }, 86400000);
+
+    }, (() => {
+        const today = new Date();
+        const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDay()).getTime();
+        return tomorrow - Date.now();
+    })());
+
+
 
     // window frame actions
     ipcMain.on('closeWindow', (_event) => {
@@ -142,9 +154,12 @@ app.on('ready', () => {
         const window = BrowserWindow.fromWebContents(_event.sender);
         window.minimize();
     });
+    ipcMain.handle('screenTime', (_event) => {
+        return JSON.stringify(ComputeScreenTime());
+    });
 
     // arguments passed while starting the app is logged
-    Logger.log("application started on boot");
+    logger.log("application started on boot");
 
     // if tray is not created then create one
     if(!tray) createTray();
@@ -159,12 +174,13 @@ app.on('ready', () => {
 
     powerMonitor.on('lock-screen', () => {
         LogScreenTime('suspend');
-        mainWindow.webContents.send('screenTime', ComputeScreenTime());
     });
     powerMonitor.on('unlock-screen', () => {
         LogScreenTime('resume');
-        mainWindow.webContents.send('screenTime', ComputeScreenTime());
+        mainWindow.webContents.send('updateScreenTime', JSON.stringify(ComputeScreenTime()));
     });
+
+
 
 });
 

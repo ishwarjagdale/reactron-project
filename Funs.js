@@ -17,53 +17,84 @@ function LogScreenTime(when) {
     const store = new Store({});
     const screenTime = store.getObj('screenTime');
     const todayDate = getDate();
-    const epoch = when === "suspend" ? -Date.now() : Date.now();
-    if(todayDate in screenTime)
-        screenTime[todayDate].push(epoch);
-    else
-        screenTime[todayDate] = [epoch];
+    const screenLogs = screenTime[todayDate] || [];
+    let obj = {
+        on: when,
+        date: Date.now()
+    };
+
+    let currentST = screenTime.currentST || 0;
+
+    if(screenLogs.length === 0) {
+        if(obj.on === "suspend") {
+            const date = new Date();
+            currentST += date.getMilliseconds();
+        }
+    } else {
+        let lastObj = screenLogs[screenLogs.length - 1];
+        if(lastObj.on === "suspend") {
+            if(obj.on === "suspend") {
+                while (screenLogs.length && screenLogs[screenLogs.length - 1].on === "suspend") {
+                    screenLogs.pop();
+                }
+                if(screenLogs.length === 0) {
+                    const date = new Date();
+                    currentST += date.getMilliseconds();
+                } else {
+                    lastObj = screenLogs[screenLogs.length - 1];
+                    currentST += (obj.date - lastObj.date);
+                }
+            }
+        } else {
+            if(obj.on === "suspend") {
+                currentST += (obj.date - lastObj.date);
+            } else {
+                obj = null;
+            }
+        }
+    }
+
+    if(obj)
+        screenLogs.push(obj);
+
+    screenTime[todayDate] = screenLogs;
+    screenTime.currentST = currentST;
+
     store.setObj('screenTime', screenTime);
+
 }
 
 
 function ComputeScreenTime() {
-
         const store = new Store({});
         const screenTime = store.getObj('screenTime');
-        const screenLogs = screenTime[getDate()];
-        let timeInMilSeconds = 0;
-        let n = screenLogs.length;
-        if(screenLogs.length % 2 !== 0) {
-            n -= 1;
-        }
-        let i = 0;
-        while(i + 1 < n) {
-            timeInMilSeconds += Math.abs(screenLogs[i] + screenLogs[i + 1]);
-            i += 2;
+        const date = getDate();
+        const screenLogs = screenTime[date];
+
+        let timeInMilSeconds = screenTime.currentST;
+
+        if(screenLogs.length !== 0) {
+            timeInMilSeconds += (Date.now() - screenLogs[screenLogs.length - 1].date);
         }
 
-        if(screenLogs.length % 2 !== 0) {
-            timeInMilSeconds += (Date.now() - screenLogs[screenLogs.length - 1]);
-        }
+        let seconds = Number.parseInt((timeInMilSeconds / 1000).toString());
+        let minutes = Number.parseInt((seconds / 60).toString());
+        let hours = Number.parseInt((minutes / 60).toString());
 
-        let second = Number.parseInt((timeInMilSeconds / 1000).toString());
-        let minute = Number.parseInt((second / 60).toString());
-        let hour = Number.parseInt((minute / 60).toString());
-
-        hour %= 24;
-        minute %= 60;
-        second %= 60;
+        hours %= 24;
+        minutes %= 60;
+        seconds %= 60;
 
         console.log({
-            hour: hour,
-            minute: minute,
-            second: second
+            hours: hours,
+            minutes: minutes,
+            seconds: seconds
         });
 
         return {
-            hour: hour,
-            minute: minute,
-            second: second
+            hours: hours,
+            minutes: minutes,
+            seconds: seconds
         };
 
 }

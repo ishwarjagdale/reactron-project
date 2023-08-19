@@ -7,5 +7,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     maximizeWindow: () => ipcRenderer.send('maximizeWindow'),
     minimizeWindow: () => ipcRenderer.send('minimizeWindow'),
 
-    getScreenTime: (callback) => ipcRenderer.on('screenTime', callback)
+    getScreenTime: (callback) => {
+        ipcRenderer.on('updateScreenTime', callback);
+        return ipcRenderer.invoke('screenTime');
+    }
+    // getScreenTime: (callback) => ipcRenderer.on('screenTime', callback)
 })

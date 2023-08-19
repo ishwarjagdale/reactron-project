@@ -1,6 +1,6 @@
 import React from "react";
 import {createRoot} from "react-dom/client";
-import {createMemoryRouter, RouterProvider, Outlet} from "react-router-dom";
+import {createMemoryRouter, RouterProvider, Outlet, Link} from "react-router-dom";
 import "./static/fonts/material-icons.css"; // material icons stylesheet
 import "./static/fonts/open-sans.css"; // open sans font stylesheet
 import "./static/css/main.css"; // base stylesheet
@@ -61,6 +61,9 @@ export function render() {
                 {
                     path: "",
                     element: <WelcomePage/>
+                }, {
+                    path: "/dashboard",
+                    element: <Link to={"/"}>Dashboard</Link>
                 }
             ]
         }
