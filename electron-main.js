@@ -2,7 +2,7 @@ import {app, BrowserWindow, ipcMain, Tray, nativeImage, Menu, powerMonitor} from
 import path from "path";
 import Store from "./Store";
 import Logger from "./Logger";
-import {ComputeScreenTime, getDate, LogScreenTime} from "./Funs";
+import {ComputeScreenTime, LogScreenTime} from "./Funs";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if(require('electron-squirrel-startup')) {
@@ -25,7 +25,6 @@ app.setLoginItemSettings({
 let mainWindow;
 let tray;
 let store;
-let dayListener;
 let logger;
 
 
@@ -57,8 +56,9 @@ const createWindow = () => {
         },
     });
 
-    mainWindow.on('close', () => {
+    mainWindow.on('close', (eve) => {
         mainWindow.hide();
+        eve.preventDefault();
     });
 
     mainWindow.on('resize', () => {
@@ -69,7 +69,7 @@ const createWindow = () => {
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
     // Open the DevTools.
-    // mainWindow.webContents.openDevTools({mode: "detach"});
+    mainWindow.webContents.openDevTools({mode: "detach"});
 };
 
 
@@ -124,22 +124,6 @@ app.on('ready', () => {
     // adding a screenTime log if empty
     LogScreenTime("resume");
 
-    if(!dayListener)
-    dayListener = setTimeout(() => {
-
-        setInterval(() => {
-            let screenTime = store.getObj('screenTime');
-            screenTime.currentST = 0;
-            store.setObj(screenTime);
-        }, 86400000);
-
-    }, (() => {
-        const today = new Date();
-        const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDay()).getTime();
-        return tomorrow - Date.now();
-    })());
-
-
 
     // window frame actions
     ipcMain.on('closeWindow', (_event) => {
@@ -155,8 +139,11 @@ app.on('ready', () => {
         window.minimize();
     });
     ipcMain.handle('screenTime', (_event) => {
-        return JSON.stringify(ComputeScreenTime());
+        return JSON.stringify(ComputeScreenTime(null, true));
     });
+    ipcMain.handle('screenLogs', (_event, range) => {
+        return JSON.stringify(ComputeScreenTime(null, false));
+    })
 
     // arguments passed while starting the app is logged
     logger.log("application started on boot");
@@ -164,11 +151,13 @@ app.on('ready', () => {
     // if tray is not created then create one
     if(!tray) createTray();
 
+    Menu.setApplicationMenu(null);
+
     // if argument doesn't have --hidden and there are no windows open then create one
     // --hidden argument is used to determine if the application was launched start at startup or not
     if(!process.argv.includes('--hidden') && !mainWindow) {
         createWindow();
-        mainWindow.webContents.send('screenTime', ComputeScreenTime());
+        mainWindow?.webContents.send('screenTime', ComputeScreenTime());
     }
 
 
@@ -177,7 +166,7 @@ app.on('ready', () => {
     });
     powerMonitor.on('unlock-screen', () => {
         LogScreenTime('resume');
-        mainWindow.webContents.send('updateScreenTime', JSON.stringify(ComputeScreenTime()));
+        mainWindow?.webContents.send('updateScreenTime', JSON.stringify(ComputeScreenTime()));
     });
 
 

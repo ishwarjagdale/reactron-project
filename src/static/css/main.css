@@ -1,6 +1,7 @@
 :root {
-    //--dark-background: #1e2124;
+    /*--dark-background: #1e2124;*/
     --dark-background: #0e1013;
+    --dark-secondary-background: #1b1d20;
 }
 
 * {
@@ -44,4 +45,3 @@ body {
 .draggable > * {
     -webkit-app-region: no-drag;
 }
-

@@ -21,3 +21,11 @@
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }
+
+.material-icons {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  margin-right: 0.5rem;
+  width: 1.5rem;
+}

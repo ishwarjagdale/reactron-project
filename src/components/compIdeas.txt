@@ -1,0 +1,4 @@
+{/*<div className={"flex items-center px-4"}>*/}
+    {/*<button className={"dark:text-gray-300 hover:bg-darkSecBG text-sm p-2 rounded material-icons"}>chevron_left</button>*/}
+    {/*<button className={"dark:text-gray-300 hover:bg-darkSecBG text-sm p-2 rounded material-icons"}>chevron_right</button>*/}
+{/*</div>*/}

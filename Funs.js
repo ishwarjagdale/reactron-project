@@ -1,4 +1,5 @@
 import Store from "./Store";
+import store from "./Store";
 
 function getDate() {
     const today = new Date();
@@ -10,6 +11,11 @@ function getDate() {
     dd = dd.padStart(2, '0');
 
     return dd + '-' + mm + '-' + yyyy;
+}
+
+function getEpoch() {
+    const date = new Date();
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 }
 
 
@@ -65,38 +71,61 @@ function LogScreenTime(when) {
 }
 
 
-function ComputeScreenTime() {
+function ComputeScreenTime(screenTime = null, ms = false) {
+    if(!screenTime) {
         const store = new Store({});
-        const screenTime = store.getObj('screenTime');
-        const date = getDate();
-        const screenLogs = screenTime[date];
+        screenTime = store.getObj('screenTime');
+    }
 
-        let timeInMilSeconds = screenTime.currentST;
+    const epoch = getEpoch();
+    const today = getDate();
+    const logs = screenTime[today] || [];
 
-        if(screenLogs.length !== 0) {
-            timeInMilSeconds += (Date.now() - screenLogs[screenLogs.length - 1].date);
+    let timeInMilSeconds = 0;
+    const procLogs = [];
+    if(logs.length) {
+        let i = 0;
+        if(logs[i].on === "suspend") {
+            procLogs.push({start: 0, end: logs[i].date - epoch});
+            timeInMilSeconds += logs[i].date - epoch
+            i += 1;
         }
+        while(i + 1 < logs.length) {
+            procLogs.push({start: logs[i].date - epoch, end: logs[i + 1].date - epoch});
+            timeInMilSeconds += (logs[i + 1].date - epoch) - (logs[i].date - epoch);
+            i += 2;
+        }
+        while(i < logs.length) {
+            procLogs.push({start: logs[i].date - epoch, end: Date.now() - epoch});
+            timeInMilSeconds += (Date.now() - epoch) - (logs[i].date - epoch);
+            i += 1;
+        }
+    }
 
-        let seconds = Number.parseInt((timeInMilSeconds / 1000).toString());
-        let minutes = Number.parseInt((seconds / 60).toString());
-        let hours = Number.parseInt((minutes / 60).toString());
+    if(!ms) {
+        return procLogs;
+    }
 
-        hours %= 24;
-        minutes %= 60;
-        seconds %= 60;
+    let seconds = Number.parseInt((timeInMilSeconds / 1000).toString());
+    let minutes = Number.parseInt((seconds / 60).toString());
+    let hours = Number.parseInt((minutes / 60).toString());
 
-        console.log({
-            hours: hours,
-            minutes: minutes,
-            seconds: seconds
-        });
+    hours %= 24;
+    minutes %= 60;
+    seconds %= 60;
 
-        return {
-            hours: hours,
-            minutes: minutes,
-            seconds: seconds
-        };
+    console.log({
+        hours: hours,
+        minutes: minutes,
+        seconds: seconds
+    });
+
+    return {
+        hours: hours,
+        minutes: minutes,
+        seconds: seconds
+    };
 
 }
 
-export { getDate, LogScreenTime, ComputeScreenTime };
+export { getDate, LogScreenTime, ComputeScreenTime, getEpoch };
