@@ -1,7 +1,13 @@
 :root {
     /*--dark-background: #1e2124;*/
+    --light-background: #fafafa;
+    --light-secondary-background: ;
+    --light-primary-text: #222831;
+    --light-secondary-text: #393E46;
+
     --dark-background: #0e1013;
     --dark-secondary-background: #1b1d20;
+    --dark-primary-text: #f1f1f1;
 }
 
 * {
@@ -26,15 +32,15 @@ body {
 
 @media (prefers-color-scheme: light) {
     #root {
-        background: white; /* TODO: select color for light mode */
-        color: black;
+        background: var(--light-background); /* TODO: select color for light mode */
+        color: var(--light-primary-text);
     }
 }
 
 @media (prefers-color-scheme: dark) {
     #root {
         background: var(--dark-background);
-        color: lightgray;
+        color: var(--dark-primary-text);
     }
 }
 
@@ -44,4 +50,54 @@ body {
 
 .draggable > * {
     -webkit-app-region: no-drag;
+}
+.accent-border {
+    position: relative;
+}
+.accent-border::after {
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+@media (prefers-color-scheme: light) {
+    .accent-border::after {
+        background-color: #1f1f1f;
+    }
+
+    .session {
+        opacity: 75%;
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .session > hr {
+        opacity: 100%;
+    }
+
+    .session:hover {
+        opacity: 100%;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .accent-border::after {
+        background-color: cornflowerblue;
+    }
+
+    .session {
+        opacity: 100%;
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .session:hover {
+        opacity: 50%;
+    }
+
+    .session:hover > hr {
+        opacity: 100%;
+    }
 }

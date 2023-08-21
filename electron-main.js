@@ -166,7 +166,7 @@ app.on('ready', () => {
     });
     powerMonitor.on('unlock-screen', () => {
         LogScreenTime('resume');
-        mainWindow?.webContents.send('updateScreenTime', JSON.stringify(ComputeScreenTime()));
+        mainWindow?.webContents.send('updateScreenTime', JSON.stringify(ComputeScreenTime(null, true)));
     });
 
 

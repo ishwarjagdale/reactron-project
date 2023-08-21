@@ -17,6 +17,13 @@ function Timeline({className = '', range = 'day', data = [], epoch}) {
 						)
 					}
 				</div>
+				<div className={"flex flex-col items-center justify-between h-full w-full absolute px-10"}>
+					{
+						Array.from(Array(yMax).keys()).reverse().map((i) =>
+							<hr key={i.toString()} className={`w-full border-0 bg-gray-600 opacity-10 ${i === 0 ? 'invisible' : '' }`} style={{height: "1.5px"}} />
+						)
+					}
+				</div>
 				{/*  Data  */}
 				<div className={"flex items-end w-full h-full relative mx-4"}>
 
@@ -31,15 +38,19 @@ function Timeline({className = '', range = 'day', data = [], epoch}) {
 							return <div title={`
 								${new Date(epoch + session.start).toLocaleTimeString()} - ${new Date(epoch + session.end).toLocaleTimeString()}
 							`} className={"flex items-end absolute w-full h-full"} key={index.toString()} style={{left: `${start}%`}}>
-								<hr className={"rounded h-full border-0 hover:opacity-25"} style={{width: `${width}%`, background: 'rgba(255, 255, 255, 0.05)'}} />
-								<hr className={"w-1 rounded-t bg-blue-400 border-0"} style={{height: `${height}%`, left: `${end}%`}} />
+
+								<div className={"flex flex-col rounded-md cursor-pointer h-full border-0 relative"} style={{width: `${width}%`}}>
+									<hr className={"w-full absolute bottom-0 rounded border-0 z-10 session h-full"} />
+									<hr className={"w-full absolute bottom-0 rounded bg-blue-400 border-0 z-10"} style={{height: `${height}%`}} />
+								</div>
+
 							</div>
 
 						})
 					}
 
 					{/*  Horizontal Axis  */}
-					<div id={"horAxi"} className={"flex absolute -bottom-4 w-full items-center justify-between border-t border-gray-800"}>
+					<div id={"horAxi"} className={"flex absolute -bottom-8 w-full items-center justify-between border-0 border-gray-800"}>
 						{
 							Array.from(Array(24).keys()).map((i) =>
 								<span key={i.toString()} style={{fontSize: '0.75rem'}} className={"text-xs text-gray-600"}>{
