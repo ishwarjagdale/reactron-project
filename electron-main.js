@@ -66,7 +66,7 @@ const createWindow = () => {
     })
 
     // and load the index.html of the app.
-    mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
+    mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY).then(null);
 
     // Open the DevTools.
     mainWindow.webContents.openDevTools({mode: "detach"});
@@ -141,7 +141,7 @@ app.on('ready', () => {
     ipcMain.handle('screenTime', (_event) => {
         return JSON.stringify(ComputeScreenTime(null, true));
     });
-    ipcMain.handle('screenLogs', (_event, range) => {
+    ipcMain.handle('screenLogs', (_event, _range) => {
         return JSON.stringify(ComputeScreenTime(null, false));
     })
 

@@ -22,7 +22,7 @@ function Overview() {
 	return (
 		<>
 			<div className={"flex flex-col w-full"}>
-				<div className={"flex flex-col items-start mb-4 py-2"}>
+				<div className={"flex flex-col items-start mb-4 pb-2"}>
 					<span className={"mb-2 pb-1 text-2xl font-OpenSans accent-border font-bold text-lightPrimary dark:text-darkPrimary"}>Summary</span>
 					<span className={"text-sm font-medium text-lightSecondary dark:text-darkSecondary"}>Your today's active sessions</span>
 				</div>
