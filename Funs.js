@@ -1,8 +1,18 @@
-import Store from "./Store";
-import store from "./Store";
+import {store} from "./Store";
+import {logger} from "./Logger";
+import {app} from "electron";
 
-function getDate() {
-    const today = new Date();
+function getDate(date=null) {
+    let today;
+    if(date !== null) {
+        if(typeof date === "number") {
+            today = new Date(date);
+        } else {
+            today = date;
+        }
+    } else {
+        today = new Date();
+    }
     const yyyy = today.getFullYear();
     let mm = (today.getMonth() + 1).toString(); // Months start at 0!
     let dd = today.getDate().toString();
@@ -13,14 +23,22 @@ function getDate() {
     return dd + '-' + mm + '-' + yyyy;
 }
 
-function getEpoch() {
-    const date = new Date();
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+function getEpoch(date=null) {
+    let today;
+    if(date !== null) {
+        if(typeof date === "number") {
+            today = new Date(date);
+        } else {
+            today = date;
+        }
+    } else {
+        today = new Date();
+    }
+    return new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
 }
 
 
 function LogScreenTime(when) {
-    const store = new Store({});
     const screenTime = store.getObj('screenTime');
     const todayDate = getDate();
     const screenLogs = screenTime[todayDate] || [];
@@ -73,7 +91,6 @@ function LogScreenTime(when) {
 
 function ComputeScreenTime(screenTime = null, ms = false) {
     if(!screenTime) {
-        const store = new Store({});
         screenTime = store.getObj('screenTime');
     }
 
@@ -128,4 +145,38 @@ function ComputeScreenTime(screenTime = null, ms = false) {
 
 }
 
-export { getDate, LogScreenTime, ComputeScreenTime, getEpoch };
+function LogApplicationChange(chunk) {
+    chunk = chunk.toString().split('\n').map(r => r.trim()).filter(r => r.length).pop()
+    try {
+        chunk = JSON.parse(chunk);
+        const appUsage = store.getObj('appUsage');
+        const todayUsage = appUsage[getDate()] || {};
+        let lastProc = appUsage._;
+
+        if(lastProc && lastProc.process && lastProc.epoch) {
+            let then = getDate(lastProc.epoch);
+            let now = getDate();
+
+            if(then !== now) {
+                const thenUsage = appUsage[then] || {};
+                thenUsage[lastProc.process] = (thenUsage[lastProc.process] || 0) + ((getEpoch(lastProc.epoch) + (36e5 * 24)) - lastProc.epoch);
+
+                appUsage[then] = thenUsage;
+            } else {
+                todayUsage[lastProc.process] = (todayUsage[lastProc.process] || 0) + (Date.now() - lastProc.epoch);
+
+                appUsage[now] = todayUsage;
+            }
+        }
+
+        lastProc = {process: chunk.process, epoch: Date.now()};
+        appUsage._ = lastProc;
+
+        store.setObj('appUsage', appUsage);
+    } catch (e) {
+        console.log(e);
+        logger.log(e);
+    }
+}
+
+export { getDate, LogScreenTime, ComputeScreenTime, getEpoch, LogApplicationChange };

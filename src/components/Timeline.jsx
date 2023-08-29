@@ -3,8 +3,7 @@ import React from "react";
 function Timeline({className = '', range = 'day', data = [], epoch}) {
 
 	const xMax = range === 'day' ? (24 * 3600 * 1000) : range === 'week' ? (7) : 100;
-	const xMin = 0;
-	const yMax = Math.ceil(Math.max(...data.map((x) => (x.end - x.start)), 5 * 36e5) / 36e5);
+	const yMax = Math.ceil(Math.max(...data.map((x) => (x.end - x.start)), 36e5) / 36e5) + 1;
 
 	return (
 		<>
@@ -35,11 +34,11 @@ function Timeline({className = '', range = 'day', data = [], epoch}) {
 							const width = end - start;
 							const height = (100 * duration) / (yMax * 36e5);
 
-							return <div title={`
-								${new Date(epoch + session.start).toLocaleTimeString()} - ${new Date(epoch + session.end).toLocaleTimeString()}
-							`} className={"flex items-end absolute w-full h-full"} key={index.toString()} style={{left: `${start}%`}}>
+							return <div className={"flex items-end absolute h-full"} key={index.toString()} style={{left: `${start}%`, width: `${width}%`}}>
 
-								<div className={"flex flex-col rounded-md cursor-pointer h-full border-0 relative"} style={{width: `${width}%`}}>
+								<div title={`
+								${new Date(epoch + session.start).toLocaleTimeString()} - ${new Date(epoch + session.end).toLocaleTimeString()}
+							`} className={"flex flex-col rounded-md cursor-pointer h-full border-0"} style={{width: `${width}%`}}>
 									<hr className={"w-full absolute bottom-0 rounded border-0 z-10 session h-full"} />
 									<hr className={"w-full absolute bottom-0 rounded bg-blue-400 border-0 z-10"} style={{height: `${height}%`}} />
 								</div>

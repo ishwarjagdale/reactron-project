@@ -1,8 +1,9 @@
 import {app, BrowserWindow, ipcMain, Tray, nativeImage, Menu, powerMonitor} from 'electron';
 import path from "path";
-import Store from "./Store";
-import Logger from "./Logger";
-import {ComputeScreenTime, LogScreenTime} from "./Funs";
+import { store } from "./Store";
+import {logger} from "./Logger";
+import {ComputeScreenTime, LogApplicationChange, LogScreenTime} from "./Funs";
+import * as child_process from "child_process";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if(require('electron-squirrel-startup')) {
@@ -24,8 +25,6 @@ app.setLoginItemSettings({
 // global variables
 let mainWindow;
 let tray;
-let store;
-let logger;
 
 
 /**
@@ -115,15 +114,15 @@ const createTray = () => {
 // When application is ready to launch
 // handles the window frame actions
 app.on('ready', () => {
-    store = new Store({
-        'windowSize': [1400, 800],
-        'screenTime': {}
-    });
-    logger = new Logger();
-
     // adding a screenTime log if empty
     LogScreenTime("resume");
-
+    const f = child_process.spawn(
+        process.env.NODE_ENV === 'development' ?
+            path.join(__dirname, "../../src/static/executables/main.exe")
+            :
+            path.join(process.resourcesPath, "static/executables/main.exe")
+    );
+    f.stdout.on('data', LogApplicationChange);
 
     // window frame actions
     ipcMain.on('closeWindow', (_event) => {

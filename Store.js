@@ -1,11 +1,11 @@
 import * as fs from "fs";
 import {app} from 'electron';
 import path from "path";
-import Logger from "./Logger";
+import {logger} from "./Logger";
 
 class Store {
     constructor(defaults) {
-        this.logger = new Logger();
+        this.logger = logger;
         this.defaults = defaults;
         this.db = path.resolve(app.getPath('userData'), "reactronStore.json");
         if(!fs.existsSync(this.db))
@@ -73,4 +73,16 @@ class Store {
     }
 }
 
-export default Store;
+
+const store = new Store({
+    windowSize: [1400, 800],
+    screenTime: {},
+    appUsage: {
+        _: {
+            process: null,
+            epoch: null
+        }
+    }
+});
+
+export {Store, store};

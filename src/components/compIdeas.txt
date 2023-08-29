@@ -2,3 +2,94 @@
     {/*<button className={"dark:text-gray-300 hover:bg-darkSecBG text-sm p-2 rounded material-icons"}>chevron_left</button>*/}
     {/*<button className={"dark:text-gray-300 hover:bg-darkSecBG text-sm p-2 rounded material-icons"}>chevron_right</button>*/}
 {/*</div>*/}
+
+function childFunction() {
+	const ffi = require("ffi-napi");
+	const ref = require("ref-napi");
+	const wchar = require("ref-wchar-napi")
+
+
+	const msgType = ref.types.void
+	const msgPtr = ref.refType(msgType)
+	const EVENT_SYSTEM_FOREGROUND = 3
+	const WINEVENT_OUTOFCONTEXT = 0
+	const WINEVENT_SKPIOWNPROCESS = 2
+
+	const user32 = ffi.Library("user32", {
+		SetWinEventHook: ["int", ["int", "int", "pointer", "pointer", "int", "int", "int"]],
+		GetWindowTextW: ["int", ["pointer", "pointer", "int"]],
+		GetWindowTextLengthW: ["int", ["pointer"]],
+		GetMessageA: ["bool", [msgPtr, "int", "uint", "uint"]]
+	})
+
+	function getMessage() {
+		return user32.GetMessageA(ref.alloc(msgPtr), null, 0, 0)
+	}
+
+	const pfnWinEventProc = ffi.Callback("void", ["pointer", "int", "pointer", "long", "long", "int", "int"],
+		function (hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
+			const windowTitleLength = user32.GetWindowTextLengthW(hwnd)
+			const bufferSize = windowTitleLength * 2 + 4
+			const titleBuffer = Buffer.alloc(bufferSize)
+			user32.GetWindowTextW(hwnd, titleBuffer, bufferSize)
+			const titleText = ref.reinterpretUntilZeros(titleBuffer, wchar.size)
+			const finallyWindowTitle = wchar.toString(titleText)
+			console.log("umm", finallyWindowTitle)
+		}
+	)
+
+	user32.SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, null, pfnWinEventProc,
+		0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKPIOWNPROCESS)
+
+	let res = getMessage()
+	while(res !== 0) {
+		switch (res) {
+			case -1:
+				console.log("Invalid GetMessageA arguments or something!");
+				break
+			default:
+				console.log("Got a message!")
+		}
+		res = getMessage()
+	}
+}
+
+childFunction();
+
+
+
+// import {} from "electron";
+
+class IndexDatabase {
+	constructor() {
+		let request = window.indexedDB.open("bayDB");
+		this.db = null;
+		request.onupgradeneeded = () => {
+			const db = request.result;
+			const objs = db.objectStoreNames;
+			if (!objs.contains("config")) {
+				const store = db.createObjectStore("config", {keyPath: "key"});
+				store.createIndex("by_key", "key", {unique: true});
+				store.put({key: "window", value: [1400, 800]});
+			}
+			if(!objs.contains("screenLogs")) {
+				const store = db.createObjectStore("screenLogs", {keyPath: "date"})
+				store.createIndex("by_date", "date", {unique: true});
+				store.put({"date": new Date(), "total": 0, "sessions": [{type: 1, epoch: Date.now()}]});
+			}
+
+		}
+		request.onsuccess = () => {
+			this.db = request.result;
+		}
+	}
+}
+
+export default IndexDatabase;
+
+
+
+    activeWindow.getOpenWindows().then(console.log);
+    activeWindow.getOpenWindows({
+
+    })

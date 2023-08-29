@@ -20,4 +20,6 @@ class Logger {
     }
 }
 
-export default Logger;
+const logger = new Logger();
+
+export {Logger, logger};
