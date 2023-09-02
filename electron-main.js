@@ -2,7 +2,7 @@ import {app, BrowserWindow, ipcMain, Tray, nativeImage, Menu, powerMonitor} from
 import path from "path";
 import { store } from "./Store";
 import {logger} from "./Logger";
-import {ComputeScreenTime, LogApplicationChange, LogScreenTime} from "./Funs";
+import {ComputeScreenTime, GetAppUsages, LogApplicationChange, LogScreenTime} from "./Funs";
 import * as child_process from "child_process";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -15,10 +15,10 @@ if(!app.requestSingleInstanceLock()) {
     app.quit();
 }
 
-// executes application on startup / user login with --hidden argument
+// executes application on startup / user login with --start-up argument
 app.setLoginItemSettings({
     openAtLogin: true,
-    args: ["--hidden"]
+    args: ["--start-up"]
 });
 
 
@@ -50,6 +50,7 @@ const createWindow = () => {
         hasShadow: false,
         roundedCorners: false,
         center: true,
+        transparent: false,
         webPreferences: {
             preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
         },
@@ -114,6 +115,15 @@ const createTray = () => {
 // When application is ready to launch
 // handles the window frame actions
 app.on('ready', () => {
+
+    // if the app starts on boot, add the shutdown time to the log
+    if(process.argv.includes("--start-up")) {
+        console.log(new Date(), "umm");
+        const bootTime = child_process.spawnSync("pwsh", [`-Command`, 'Get-WinEvent -FilterHashtable @{logname = ‘System’; id = 1074} -MaxEvents 1 | Select -ExpandProperty "TimeCreated"']);
+        LogScreenTime("suspend", new Date(bootTime.stdout.toString()).getTime());
+        console.log(new Date(), "hmm");
+    }
+
     // adding a screenTime log if empty
     LogScreenTime("resume");
     const f = child_process.spawn(
@@ -143,6 +153,9 @@ app.on('ready', () => {
     ipcMain.handle('screenLogs', (_event, _range) => {
         return JSON.stringify(ComputeScreenTime(null, false));
     })
+    ipcMain.handle('appUsages', (_event, _range) => {
+        return JSON.stringify(GetAppUsages());
+    })
 
     // arguments passed while starting the app is logged
     logger.log("application started on boot");
@@ -152,9 +165,9 @@ app.on('ready', () => {
 
     Menu.setApplicationMenu(null);
 
-    // if argument doesn't have --hidden and there are no windows open then create one
-    // --hidden argument is used to determine if the application was launched start at startup or not
-    if(!process.argv.includes('--hidden') && !mainWindow) {
+    // if argument doesn't have --start-up and there are no windows open then create one
+    // --start-up argument is used to determine if the application was launched start at startup or not
+    if(!process.argv.includes('--start-up') && !mainWindow) {
         createWindow();
         mainWindow?.webContents.send('screenTime', ComputeScreenTime());
     }

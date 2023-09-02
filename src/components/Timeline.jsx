@@ -7,7 +7,7 @@ function Timeline({className = '', range = 'day', data = [], epoch}) {
 
 	return (
 		<>
-			<div className={"flex w-full relative h-1/3 " + className}>
+			<div className={"flex w-full relative " + className} style={{height: "15rem"}}>
 				{/*  Vertical Axis  */}
 				<div id={"vertAxi"} className={"flex flex-col items-center justify-between h-full w-fit"}>
 					{
@@ -34,14 +34,12 @@ function Timeline({className = '', range = 'day', data = [], epoch}) {
 							const width = end - start;
 							const height = (100 * duration) / (yMax * 36e5);
 
-							return <div className={"flex items-end absolute h-full"} key={index.toString()} style={{left: `${start}%`, width: `${width}%`}}>
-
-								<div title={`
+							return <div title={`
 								${new Date(epoch + session.start).toLocaleTimeString()} - ${new Date(epoch + session.end).toLocaleTimeString()}
-							`} className={"flex flex-col rounded-md cursor-pointer h-full border-0"} style={{width: `${width}%`}}>
-									<hr className={"w-full absolute bottom-0 rounded border-0 z-10 session h-full"} />
-									<hr className={"w-full absolute bottom-0 rounded bg-blue-400 border-0 z-10"} style={{height: `${height}%`}} />
-								</div>
+							`} className={"flex items-end absolute h-full"} key={index.toString()} style={{left: `${start}%`, width: `${width}%`}}>
+
+								<hr className={"w-full absolute bottom-0 rounded border-0 z-10 session h-full"} />
+								<hr className={"w-full absolute bottom-0 rounded bg-blue-400 border-0 z-10"} style={{height: `${height}%`}} />
 
 							</div>
 
@@ -53,8 +51,8 @@ function Timeline({className = '', range = 'day', data = [], epoch}) {
 						{
 							Array.from(Array(24).keys()).map((i) =>
 								<span key={i.toString()} style={{fontSize: '0.75rem'}} className={"text-xs text-gray-600"}>{
-									i % 6 === 0 ? (
-										i === 0 ? '12 AM' : i === 6 ? '6 AM' : i === 12 ? '12 PM' : i === 18 ? '6 PM' : ''
+									i % 2 === 0 ? (
+										i.toString().padStart(2, '0') + ":00"
 									) : ''
 								}</span>
 							)

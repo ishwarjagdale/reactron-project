@@ -58,7 +58,7 @@ function WindowLayout() {
                 </div>
             </div>
             {/* Content */}
-            <div className={"flex"} style={{height: "calc(100% - 50px)", padding: "0.5rem 0.5rem 0.6rem"}}>
+            <div className={"flex overflow-hidden overflow-y-auto"} style={{height: "calc(100% - 50px)", padding: "0.5rem 0.5rem 0.6rem"}}>
                 <Outlet/>
             </div>
         </>
@@ -94,10 +94,7 @@ export function render() {
                 }
             ]
         }
-    ], {
-        initialEntries: ["/", "/dashboard"],
-        initialIndex: 1
-    });
+    ]);
 
     root.render(<RouterProvider router={router} />);
 }

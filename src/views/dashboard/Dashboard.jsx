@@ -29,7 +29,7 @@ function Dashboard() {
 			<div className={"flex w-full h-full items-start"}>
 				<Sidebar sideItems={sideItems} handleChange={changeView} active={view} />
 				<hr className={"h-full border-none mx-2 bg-gray-200 invisible dark:bg-darkSecBG"} style={{width: "1px"}} />
-				<div className={"flex p-2 h-full w-full"}>
+				<div className={"flex p-2 h-full w-full"} style={{minWidth: "48rem"}}>
 					<Outlet />
 				</div>
 			</div>

@@ -37,14 +37,18 @@ function getEpoch(date=null) {
     return new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
 }
 
-
-function LogScreenTime(when) {
+function LogScreenTime(on, epoch=null) {
     const screenTime = store.getObj('screenTime');
     const todayDate = getDate();
     const screenLogs = screenTime[todayDate] || [];
+
+    if(screenLogs.length && on === "start-up" && screenLogs[screenLogs.length - 1].on === "suspend") {
+        return;
+    }
+
     let obj = {
-        on: when,
-        date: Date.now()
+        on: on,
+        date: epoch || Date.now()
     };
 
     let currentST = screenTime.currentST || 0;
@@ -131,12 +135,6 @@ function ComputeScreenTime(screenTime = null, ms = false) {
     minutes %= 60;
     seconds %= 60;
 
-    console.log({
-        hours: hours,
-        minutes: minutes,
-        seconds: seconds
-    });
-
     return {
         hours: hours,
         minutes: minutes,
@@ -159,11 +157,11 @@ function LogApplicationChange(chunk) {
 
             if(then !== now) {
                 const thenUsage = appUsage[then] || {};
-                thenUsage[lastProc.process] = (thenUsage[lastProc.process] || 0) + ((getEpoch(lastProc.epoch) + (36e5 * 24)) - lastProc.epoch);
+                thenUsage[lastProc.process] = Math.abs((thenUsage[lastProc.process] || 0) + ((getEpoch(lastProc.epoch) + (36e5 * 24)) - lastProc.epoch));
 
                 appUsage[then] = thenUsage;
             } else {
-                todayUsage[lastProc.process] = (todayUsage[lastProc.process] || 0) + (Date.now() - lastProc.epoch);
+                todayUsage[lastProc.process] = Math.abs((todayUsage[lastProc.process] || 0) + (Date.now() - lastProc.epoch));
 
                 appUsage[now] = todayUsage;
             }
@@ -179,4 +177,16 @@ function LogApplicationChange(chunk) {
     }
 }
 
-export { getDate, LogScreenTime, ComputeScreenTime, getEpoch, LogApplicationChange };
+function GetAppUsages() {
+    const appUsage = store.getObj('appUsage');
+    const todayUsage = appUsage[getDate()] || {};
+    return Object.keys(todayUsage).map((k) => {
+        return {
+            name: k,
+            path: k,
+            usage: todayUsage[k]
+        }
+    })
+}
+
+export { getDate, LogScreenTime, ComputeScreenTime, getEpoch, LogApplicationChange, GetAppUsages };

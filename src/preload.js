@@ -14,6 +14,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     getScreenLogs: (range) => {
         return ipcRenderer.invoke('screenLogs', range);
+    },
+
+    getAppUsages: (range) => {
+        return ipcRenderer.invoke('appUsages', range);
     }
     // getScreenTime: (callback) => ipcRenderer.on('screenTime', callback)
 })

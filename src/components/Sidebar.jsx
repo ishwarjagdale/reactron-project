@@ -16,7 +16,7 @@ function SideItems({index, active, mtIcon, text, handleChange}) {
 function Sidebar({sideItems, active=0, handleChange}) {
 	return (
 		<>
-			<ul className={"flex flex-col w-full p-2 h-full"} style={{maxWidth: "16rem"}}>
+			<ul className={"flex flex-col p-2 sticky top-0"} style={{minWidth: "16rem"}}>
 				{
 					sideItems.map((item, i) =>
 						<SideItems key={i.toString()} index={i} handleChange={handleChange} active={i === active} mtIcon={item.mtIcon} text={item.text} />

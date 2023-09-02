@@ -55,7 +55,7 @@ function WelcomePage() {
 	} else if(hour >= 18) {
 		greet = "Good evening";
 	} else {
-		greet = "Great midnight";
+		greet = "You should sleep";
 	}
 
 	return (
@@ -66,7 +66,7 @@ function WelcomePage() {
 						<span className={"material-icons px-2 text-2xl"}>devices</span>
 						{/*<h1 className={"text-2xl"}>Screen Time</h1>*/}
 					</div>
-					<div className={"flex items-start font-medium px-2 leading-[1]"} style={{fontSize: "9rem", width: "calc(590px + 0.5rem)"}}>
+					<div className={"flex items-start font-bold px-2 leading-[1]"} style={{fontSize: "9rem", width: "calc(590px + 0.5rem)"}}>
 						<span className={"digit"}>{ Number.parseInt((screenTime.hours / 10).toString()) }</span>
 						<span className={"digit"}>{ screenTime.hours % 10 }</span>
 						<span className={"font-normal leading-[0.8] px-2"}>:</span>
@@ -79,7 +79,7 @@ function WelcomePage() {
 					<span className={"p-2 text-md text-lightSecondary dark:text-darkSecondary"}>Total screen time tracked today</span>
 				</div>
 				<div className={"flex flex-col items-center p-4"}>
-					<span className={"text-lightPrimary dark:text-darkPrimary text-2xl p-1"}>{ greet }, <b>&#60;insert name&#62;</b></span>
+					<span className={"text-lightPrimary dark:text-darkPrimary text-2xl p-1"}>{ greet }, <b className={"font-semibold"}>Ishwar</b></span>
 					<span className={"text-lightSecondary dark:text-darkSecondary text-sm"}>Let's see how you're doing</span>
 					<Link to={"/dashboard"} className="material-icons pt-8 text-lightSecondary dark:text-darkSecondary hover:text-black hover:dark:text-blue-400 pb-2">keyboard_double_arrow_down</Link>
 				</div>
