@@ -11,33 +11,40 @@ function getEpoch() {
 function Overview() {
 
 	const [screenTime, setScreenTime] = useState([]);
-	const [timelineRange, setTimelineRange] = useState('day');
+	const [timeRange, setTimeRange] = useState(0);
 	const [appUsages, setAppUsages] = useState([{path: "", usage: 0}]);
 
 	useEffect(() => {
-		window.electronAPI.getScreenLogs(0).then(r => {
+		window.electronAPI.getScreenLogs(timeRange).then(r => {
 			setScreenTime(JSON.parse(r))
 		});
-	}, []);
+	}, [timeRange]);
 
 	useEffect(() => {
-		window.electronAPI.getAppUsages(0).then(r => {
+		window.electronAPI.getAppUsages(timeRange).then(r => {
 			setAppUsages(JSON.parse(r).sort((a, b) => a.usage > b.usage ? -1 : a.usage < b.usage ? 1 : 0));
 		})
-	}, []);
+	}, [timeRange]);
 
 
 	return (
 		<>
-			<div onFocusCapture={window.location.reload} className={"flex flex-col w-full"}>
+			<div className={"flex flex-col w-full"}>
 
 				<section className={"w-full h-fit mb-8"}>
 					<div className={"flex flex-col w-full mb-8"}>
-						<div className={"flex flex-col items-start mb-3 pb-2"}>
-							<span className={"text-2xl font-OpenSans accent-border font-bold text-lightPrimary dark:text-darkPrimary"}>Summary</span>
-							<span className={"text-sm text-lightSecondary dark:text-darkSecondary"}>Your today's active sessions</span>
+						<div className={"flex items-center mb-3 pb-2"}>
+							<div className={"flex flex-col items-start justify-between w-full"}>
+								<span className={"text-2xl font-OpenSans accent-border font-bold text-lightPrimary dark:text-darkPrimary"}>Summary</span>
+								<span className={"text-sm text-lightSecondary dark:text-darkSecondary"}>Your today's active sessions</span>
+							</div>
+							<div className={"flex items-center but relative rounded-md"}>
+								<button onClick={() => setTimeRange(timeRange - 1)}  className={"material-icons text-lg hover-but h-full"}>arrow_left</button>
+								<button className={"whitespace-nowrap hover-but text-xs p-2.5 font-OpenSans h-full"}>{new Date(Date.now() + (timeRange * 36e5 * 24)).toDateString()}</button>
+								<button onClick={() => setTimeRange(timeRange + 1)} className={`material-icons text-lg hover-but h-full disabled:text-slate-600`} disabled={timeRange === 0}>arrow_right</button>
+							</div>
 						</div>
-						<Timeline range={timelineRange} data={screenTime} epoch={getEpoch()} />
+						<Timeline range={timeRange} data={screenTime} epoch={getEpoch()} />
 					</div>
 				</section>
 

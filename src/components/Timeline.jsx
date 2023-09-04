@@ -1,8 +1,8 @@
 import React from "react";
 
-function Timeline({className = '', range = 'day', data = [], epoch}) {
+function Timeline({className = '', range = 0, data = [], epoch}) {
 
-	const xMax = range === 'day' ? (24 * 3600 * 1000) : range === 'week' ? (7) : 100;
+	const xMax = range <= 6 ? (24 * 3600 * 1000) : range === 7 ? (7) : 100;
 	const yMax = Math.ceil(Math.max(...data.map((x) => (x.end - x.start)), 36e5) / 36e5) + 1;
 
 	return (
@@ -27,7 +27,7 @@ function Timeline({className = '', range = 'day', data = [], epoch}) {
 				<div className={"flex items-end w-full h-full relative mx-4"}>
 
 					{
-						data.map((session, index) => {
+						data.length ? data.map((session, index) => {
 							const duration = session.end - session.start;
 							const start = (100 * session.start) / xMax;
 							const end = (100 * session.end) / xMax;
@@ -43,7 +43,9 @@ function Timeline({className = '', range = 'day', data = [], epoch}) {
 
 							</div>
 
-						})
+						}) : <div className={"absolute w-full h-full flex items-center justify-center"}>
+							<span className={"text-sm text-lightSecondary dark:text-darkSecondary opacity-60"}>No data available!</span>
+						</div>
 					}
 
 					{/*  Horizontal Axis  */}

@@ -12,7 +12,7 @@ function AppDonut({appUsages}) {
 	const colors = ["#4285F4", "#DB4437", "#F4B400", "#0F9D58"];
 
 	// const total = 36e2 * 24;
-	const total = appUsages.map(r => r.usage).reduce((previousValue, currentValue) => previousValue + currentValue);
+	const total = appUsages.length ? appUsages.map(r => r.usage).reduce((previousValue, currentValue) => previousValue + currentValue) : 0;
 	let sum = 0;
 
 	const hours = Number.parseInt(total / 36e5);
@@ -33,6 +33,9 @@ function AppDonut({appUsages}) {
 							<span className={"font-bold text-4xl"}>{minutes}</span>
 							<span className={"text-xl font-medium text-lightSecondary dark:text-darkSecondary"}>Mn</span>
 						</div> : <></>
+					}
+					{
+						!hours && !minutes ? <span className={"text-sm text-lightSecondary dark:text-darkSecondary opacity-60"}>No data available!</span> : <></>
 					}
 
 				</div>

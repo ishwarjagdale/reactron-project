@@ -131,3 +131,10 @@ body {
         stroke: rgba(255, 255, 255, 0.05);
     }
 }
+
+.but {
+    @apply h-full bg-gray-100 dark:bg-darkSecBG text-lightSecondary dark:text-darkSecondary;
+}
+.hover-but {
+    @apply hover:bg-gray-200 p-1 px-4 m-0 hover:dark:bg-darkBG;
+}
