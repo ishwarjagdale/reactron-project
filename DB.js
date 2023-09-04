@@ -199,13 +199,16 @@ class DB {
 	}
 
 	static logApplicationChange(chunk) {
-		chunk = chunk.toString().split('\n').map(r => r.trim()).filter(r => r.length).pop();
-		chunk = JSON.parse(chunk);
+		try {
+			chunk = chunk.toString().split('\n').map(r => r.trim()).filter(r => r.length).pop();
+			chunk = JSON.parse(chunk);
+		} catch (e) {
+			chunk = undefined;
+		}
 
-		let lastProcess = DB.statements.getFromStore.get('lastProcess');
-		if(lastProcess) lastProcess = JSON.parse(lastProcess.value);
-
-		if (lastProcess) {
+		let record = DB.statements.getFromStore.get('lastProcess');
+		if (record && record.value) {
+			let lastProcess = JSON.parse(record.value);
 			const lastProcUsage = DB.statements.appUsage.get(getEpoch(lastProcess.epoch), lastProcess.process);
 			const now = getEpoch();
 			const then = getEpoch(lastProcess.epoch);
@@ -226,9 +229,22 @@ class DB {
 				DB.statements.insertAppUsage.run(lastProcess.process, now, Date.now() - lastProcess.epoch);
 			}
 
-			DB.statements.updateStore.run(JSON.stringify({process: chunk.process, epoch: Date.now()}), 'lastProcess');
+			DB.statements.updateStore.run(
+				chunk ? JSON.stringify({process: chunk.process, epoch: Date.now()}) : null,
+				'lastProcess'
+			);
 		} else {
-			DB.statements.insertIntoStore.run('lastProcess', JSON.stringify({process: chunk.process, epoch: Date.now()}));
+			if(record) {
+				DB.statements.updateStore.run(
+					chunk ? JSON.stringify({process: chunk.process, epoch: Date.now()}): null,
+					'lastProcess',
+				);
+			} else {
+				DB.statements.insertIntoStore.run(
+					'lastProcess',
+					chunk ? JSON.stringify({process: chunk.process, epoch: Date.now()}): null
+				);
+			}
 		}
 	}
 

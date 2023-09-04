@@ -24,6 +24,7 @@ app.setLoginItemSettings({
 // global variables
 let mainWindow;
 let tray;
+let appReader;
 
 
 /**
@@ -50,11 +51,6 @@ const createWindow = () => {
         webPreferences: {
             preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
         },
-    });
-
-    mainWindow.on('close', (eve) => {
-        mainWindow.hide();
-        eve.preventDefault();
     });
 
     // and load the index.html of the app.
@@ -88,7 +84,7 @@ const createTray = () => {
         {
             label: "Quit",
             click() {
-                app.quit();
+                app.quit()
             }
         }
     ]));
@@ -118,13 +114,13 @@ app.on('ready', () => {
     // adding a screenTime log if empty
     DB.insertScreenLog("resume");
 
-    const f = child_process.spawn(
+    appReader = child_process.spawn(
         process.env.NODE_ENV === 'development' ?
             path.join(__dirname, "../../src/static/executables/main.exe")
             :
             path.join(process.resourcesPath, "static/executables/main.exe")
     );
-    f.stdout.on('data', DB.logApplicationChange);
+    appReader.stdout.on('data', DB.logApplicationChange);
 
     // window frame actions
     ipcMain.on('closeWindow', (_event) => {
@@ -190,3 +186,9 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
+
+app.on('will-quit', () => {
+    appReader.kill();
+    DB.logApplicationChange("");
+    DB.insertScreenLog("suspend");
+})
