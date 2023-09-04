@@ -94,7 +94,10 @@ export function render() {
                 }
             ]
         }
-    ]);
+    ], {
+        initialEntries: ["/", "/dashboard"],
+        initialIndex: 1
+    });
 
     root.render(<RouterProvider router={router} />);
 }

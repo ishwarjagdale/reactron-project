@@ -1,9 +1,8 @@
 import {app, BrowserWindow, ipcMain, Tray, nativeImage, Menu, powerMonitor} from 'electron';
 import path from "path";
-import { store } from "./Store";
 import {logger} from "./Logger";
-import {ComputeScreenTime, GetAppUsages, LogApplicationChange, LogScreenTime} from "./Funs";
 import * as child_process from "child_process";
+import DB from "./DB";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if(require('electron-squirrel-startup')) {
@@ -37,13 +36,10 @@ const createWindow = () => {
         return;
     }
 
-
-    const dimensions = store.getObj('windowSize');
-
     // Create the browser window.
     mainWindow = new BrowserWindow({
-        width: dimensions[0],
-        height: dimensions[1],
+        width: 1400,
+        height: 800,
         frame: false,
         maximizable: true,
         resizable: false,
@@ -60,10 +56,6 @@ const createWindow = () => {
         mainWindow.hide();
         eve.preventDefault();
     });
-
-    mainWindow.on('resize', () => {
-        store.setObj('windowSize', mainWindow.getSize());
-    })
 
     // and load the index.html of the app.
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY).then(null);
@@ -115,24 +107,24 @@ const createTray = () => {
 // When application is ready to launch
 // handles the window frame actions
 app.on('ready', () => {
+    DB.initApp(app.getPath('userData'));
 
     // if the app starts on boot, add the shutdown time to the log
     if(process.argv.includes("--start-up")) {
-        console.log(new Date(), "umm");
         const bootTime = child_process.spawnSync("pwsh", [`-Command`, 'Get-WinEvent -FilterHashtable @{logname = ‘System’; id = 1074} -MaxEvents 1 | Select -ExpandProperty "TimeCreated"']);
-        LogScreenTime("suspend", new Date(bootTime.stdout.toString()).getTime());
-        console.log(new Date(), "hmm");
+        DB.insertScreenLog("suspend", new Date(bootTime.stdout.toString()).getTime());
     }
 
     // adding a screenTime log if empty
-    LogScreenTime("resume");
+    DB.insertScreenLog("resume");
+
     const f = child_process.spawn(
         process.env.NODE_ENV === 'development' ?
             path.join(__dirname, "../../src/static/executables/main.exe")
             :
             path.join(process.resourcesPath, "static/executables/main.exe")
     );
-    f.stdout.on('data', LogApplicationChange);
+    f.stdout.on('data', DB.logApplicationChange);
 
     // window frame actions
     ipcMain.on('closeWindow', (_event) => {
@@ -147,14 +139,18 @@ app.on('ready', () => {
         const window = BrowserWindow.fromWebContents(_event.sender);
         window.minimize();
     });
+
+    // for the welcome page timer
     ipcMain.handle('screenTime', (_event) => {
-        return JSON.stringify(ComputeScreenTime(null, true));
+        return JSON.stringify(DB.computeScreenTime(DB.processScreenLogs(DB.getScreenLogs(), true)));
     });
+
+    // for the dashboard overview graphs
     ipcMain.handle('screenLogs', (_event, _range) => {
-        return JSON.stringify(ComputeScreenTime(null, false));
+        return JSON.stringify(DB.processScreenLogs(DB.getScreenLogs()));
     })
     ipcMain.handle('appUsages', (_event, _range) => {
-        return JSON.stringify(GetAppUsages());
+        return JSON.stringify(DB.getApplicationUsage());
     })
 
     // arguments passed while starting the app is logged
@@ -169,16 +165,16 @@ app.on('ready', () => {
     // --start-up argument is used to determine if the application was launched start at startup or not
     if(!process.argv.includes('--start-up') && !mainWindow) {
         createWindow();
-        mainWindow?.webContents.send('screenTime', ComputeScreenTime());
+        mainWindow?.webContents.send('screenTime', JSON.stringify(DB.computeScreenTime(DB.processScreenLogs(DB.getScreenLogs(), true))));
     }
 
 
     powerMonitor.on('lock-screen', () => {
-        LogScreenTime('suspend');
+        DB.insertScreenLog("suspend");
     });
     powerMonitor.on('unlock-screen', () => {
-        LogScreenTime('resume');
-        mainWindow?.webContents.send('updateScreenTime', JSON.stringify(ComputeScreenTime(null, true)));
+        DB.insertScreenLog("resume");
+        mainWindow?.webContents.send('updateScreenTime', JSON.stringify(DB.computeScreenTime(DB.processScreenLogs(DB.getScreenLogs(), true))));
     });
 
 
@@ -190,7 +186,6 @@ app.on('ready', () => {
 app.on('window-all-closed', () => {
     if(process.platform === 'darwin') app.hide();
 });
-
 
 app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
