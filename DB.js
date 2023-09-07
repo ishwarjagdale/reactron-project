@@ -51,68 +51,40 @@ class DB {
 
 		DB.handler.prepare(`CREATE TABLE IF NOT EXISTS screenTime
                             (
-                                date
-                                DATETIME
-                                PRIMARY
-                                KEY,
-                                event
-                                BOOLEAN
-                                NOT
-                                NULL
+                                date DATETIME PRIMARY KEY,
+                                event BOOLEAN NOT NULL
                             );`).run()
 		DB.handler.prepare(`CREATE TABLE IF NOT EXISTS appUsage
                             (
-                                app
-                                TEXT,
-                                title
-                                TEXT,
-                                date
-                                DATETIME
-                                NOT
-                                NULL,
-                                use
-                                DATETIME
-                                NOT
-                                NULL
-                                DEFAULT
-                                0,
-                                category
-                                TEXT
+                                app TEXT,
+                                date DATETIME NOT NULL,
+                                use DATETIME NOT NULL DEFAULT 0
                             );`).run();
 		DB.handler.prepare(`CREATE TABLE IF NOT EXISTS store
                             (
-                                key
-                                TEXT
-                                PRIMARY
-                                KEY,
-                                value
-                                BLOB
-                            )`).run();
+                                key TEXT PRIMARY KEY,
+                                value BLOB
+                            );`).run();
 
 		DB.statements.insertScreenLog = DB.handler.prepare(`INSERT INTO screenTime
                                                             VALUES (?, ?);`);
 		DB.statements.getFromStore = DB.handler.prepare(`SELECT *
                                                          FROM store
                                                          WHERE key = ?`);
-		DB.statements.updateStore = DB.handler.prepare(`UPDATE store
-                                                        SET value = ?
-                                                        WHERE key = ?`);
-		DB.statements.insertIntoStore = DB.handler.prepare(`INSERT INTO store
-                                                            VALUES (?, ?)`);
-
+		DB.statements.toStore = DB.handler.prepare(`REPLACE INTO store
+                                                        VALUES (?, ?)`);
 		DB.statements.getScreenLogs = DB.handler.prepare(`SELECT *
                                                           FROM screenTime
                                                           WHERE STRFTIME('%d-%m-%Y', DATETIME(ROUND(date / 1000), 'unixepoch')) = ?`);
 
-		DB.statements.allAppUsage = DB.handler.prepare(`SELECT *
+		DB.statements.allAppUsage = DB.handler.prepare(`SELECT app, SUM(use) as usage
                                                         FROM appUsage
-                                                        WHERE date = ?`);
+                                                        WHERE date = ?
+                                                        GROUP BY app`);
 
 		DB.statements.appUsage = DB.handler.prepare(`SELECT * FROM appUsage WHERE date = ? AND app = ?`);
 
-		DB.statements.updateAppUsage = DB.handler.prepare(`UPDATE appUsage SET use = ? WHERE date = ? AND app = ?`);
-
-		DB.statements.insertAppUsage = DB.handler.prepare(`INSERT INTO appUsage VALUES (?, null, ?, ?, null)`);
+		DB.statements.insertAppUsage = DB.handler.prepare(`INSERT INTO appUsage VALUES (?, ?, ?)`);
 	}
 
 	static insertScreenLog(event, date = Date.now()) {
@@ -127,7 +99,7 @@ class DB {
 		let cst = DB.statements.getFromStore.get('currentScreenTime');
 		let currentScreenTime;
 		if (cst === undefined) {
-			DB.statements.insertIntoStore.run('currentScreenTime', 0);
+			DB.statements.toStore.run('currentScreenTime', 0);
 			currentScreenTime = 0;
 		} else {
 			currentScreenTime = cst.value;
@@ -148,7 +120,7 @@ class DB {
 				currentScreenTime += Math.abs(date - lastLog.date);
 			}
 		}
-		DB.statements.updateStore.run(currentScreenTime, 'currentScreenTime');
+		DB.statements.toStore.run(currentScreenTime, 'currentScreenTime');
 
 	}
 
@@ -157,10 +129,11 @@ class DB {
 	}
 
 	static processScreenLogs(logs, ms = false) {
-		const epoch = getEpoch();
 		let timeInMilSeconds = 0;
 		const procLogs = [];
 		if (logs.length) {
+			const epoch = getEpoch(logs[0].date);
+			const nEpoch = epoch + (36e5 * 24);
 			let i = 0;
 			if (logs[i].event === 0) {
 				procLogs.push({start: 0, end: logs[i].date - epoch});
@@ -173,8 +146,8 @@ class DB {
 				i += 2;
 			}
 			while (i < logs.length) {
-				procLogs.push({start: logs[i].date - epoch, end: Date.now() - epoch});
-				timeInMilSeconds += (Date.now() - epoch) - (logs[i].date - epoch);
+				procLogs.push({start: logs[i].date - epoch, end: Math.min(nEpoch, Date.now()) - epoch});
+				timeInMilSeconds += (Math.min(nEpoch, Date.now()) - epoch) - (logs[i].date - epoch);
 				i += 1;
 			}
 		}
@@ -207,54 +180,44 @@ class DB {
 		}
 
 		let record = DB.statements.getFromStore.get('lastProcess');
+		// record = JSON-string or null in value or undefined
+
 		if (record && record.value) {
+
 			let lastProcess = JSON.parse(record.value);
-			const lastProcUsage = DB.statements.appUsage.get(getEpoch(lastProcess.epoch), lastProcess.process);
-			const now = getEpoch();
+			// lastProcess = { process: processName, epoch: unixEpoch }
+
+			const today = getEpoch();
 			const then = getEpoch(lastProcess.epoch);
 
-			if (now !== then) {
-				let use = Math.abs(((then + (36e5 * 24)) - lastProcess.epoch));
-				if (lastProcUsage) {
-					DB.statements.updateAppUsage.run(lastProcUsage.use + use, then, lastProcUsage.app);
-				} else {
-					DB.statements.insertAppUsage.run(lastProcess.process, then, use);
-				}
+			if(today !== then) {
+				let usageOnThatDay = (then + 36e5 * 24) - lastProcess.epoch;
+				let usageToday = Date.now() - today;
+
+				DB.statements.insertAppUsage.run(lastProcess.process, then, usageOnThatDay);
+				DB.statements.insertAppUsage.run(lastProcess.process, today, usageToday);
+			} else {
+				let usageToday = Date.now() - lastProcess.epoch;
+
+				DB.statements.insertAppUsage.run(lastProcess.process, today, usageToday);
 			}
 
-			if (lastProcUsage) {
-				let use = Math.abs(Date.now() - lastProcess.epoch);
-				DB.statements.updateAppUsage.run(lastProcUsage.use + use, lastProcUsage.date, lastProcUsage.app);
-			} else {
-				DB.statements.insertAppUsage.run(lastProcess.process, now, Date.now() - lastProcess.epoch);
-			}
-
-			DB.statements.updateStore.run(
-				chunk ? JSON.stringify({process: chunk.process, epoch: Date.now()}) : null,
-				'lastProcess'
-			);
-		} else {
-			if(record) {
-				DB.statements.updateStore.run(
-					chunk ? JSON.stringify({process: chunk.process, epoch: Date.now()}): null,
-					'lastProcess',
-				);
-			} else {
-				DB.statements.insertIntoStore.run(
-					'lastProcess',
-					chunk ? JSON.stringify({process: chunk.process, epoch: Date.now()}): null
-				);
-			}
 		}
+
+		DB.statements.toStore.run(
+			'lastProcess',
+			chunk ? JSON.stringify({process: chunk.process, epoch: Date.now()}): null
+		);
+
 	}
 
 	static getApplicationUsage(date=null) {
 		const apps = DB.statements.allAppUsage.all(getEpoch(date));
 		return apps.map(r => {
 			return {
-				name: r.title,
+				name: r.app,
 				path: r.app,
-				usage: r.use
+				usage: r.usage
 			}
 		});
 	}

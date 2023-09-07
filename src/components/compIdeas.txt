@@ -313,3 +313,24 @@ export default IndexDatabase;
  });
 
  export {Store, store};
+
+ ---------------------------------------------------------------------------------------
+ test.js
+
+ const Database = require("better-sqlite3");
+ const fs = require("fs");
+ const db = new Database("C:/Users/ishwa/AppData/Roaming/reactron-project/database.db");
+ const file = "C:/Users/ishwa/AppData/Roaming/reactron-project/reactronStore.json";
+ const store = JSON.parse(fs.readFileSync(file));
+ Object.keys(store.screenTime).map((k) => {
+ 	let insert = db.prepare(`INSERT INTO screenTime VALUES (?, ?);`);
+ 	if(typeof store.screenTime[k] !== "number")
+ 	store.screenTime[k].map((log) => {
+ 		console.log(log);
+ 		insert.run(log.date, log.on === "resume" ? 1 : 0);
+ 	});
+
+ });
+ db.close();
+
+ ------------------------------------------------------------------------------------------------

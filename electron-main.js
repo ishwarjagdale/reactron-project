@@ -143,10 +143,10 @@ app.on('ready', () => {
 
     // for the dashboard overview graphs
     ipcMain.handle('screenLogs', (_event, range) => {
-        return JSON.stringify(DB.processScreenLogs(DB.getScreenLogs(Date.now() - (range * (36e5 * 24)))));
+        return JSON.stringify(DB.processScreenLogs(DB.getScreenLogs(Date.now() + (range * (36e5 * 24)))));
     })
     ipcMain.handle('appUsages', (_event, range) => {
-        return JSON.stringify(DB.getApplicationUsage(Date.now() - (range * (36e5 * 24))));
+        return JSON.stringify(DB.getApplicationUsage(Date.now() + (range * (36e5 * 24))));
     })
 
     // arguments passed while starting the app is logged

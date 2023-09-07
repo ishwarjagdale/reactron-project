@@ -3,7 +3,7 @@ import React from "react";
 function AppDonut({appUsages}) {
 	
 	const width = 50;
-	const strokeWidth = 6
+	const strokeWidth = 2
 	const radius = width - strokeWidth;
 	const strokeLinecap = "round"; // "butt | round | square | inherit"
 	const strokeLinejoin = "round"; // "miter | round | bevel | inherit"
