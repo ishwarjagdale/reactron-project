@@ -3,7 +3,6 @@ import path from "path";
 import {logger} from "./Logger";
 import * as child_process from "child_process";
 import DB from "./DB";
-import {log} from "@vercel/webpack-asset-relocator-loader";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if(require('electron-squirrel-startup')) {
@@ -163,7 +162,7 @@ app.on('ready', () => {
         }
     })
     ipcMain.handle('appUsages', (_event, range) => {
-        return JSON.stringify(DB.getApplicationUsage(Date.now() - (range * (36e5 * 24))));
+        return range <= 0 ? JSON.stringify(DB.getApplicationUsage(Date.now() + (range * (36e5 * 24)))) : JSON.stringify(DB.getApplicationUsage(Date.now() - (range * (36e5 * 24))));
     })
 
     // arguments passed while starting the app is logged
