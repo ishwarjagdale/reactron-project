@@ -3,7 +3,7 @@ import React from "react";
 function AppDonut({appUsages}) {
 	
 	const width = 50;
-	const strokeWidth = 2
+	const strokeWidth = 4
 	const radius = width - strokeWidth;
 	const strokeLinecap = "round"; // "butt | round | square | inherit"
 	const strokeLinejoin = "round"; // "miter | round | bevel | inherit"
@@ -31,7 +31,7 @@ function AppDonut({appUsages}) {
 					{
 						minutes ? <div className={"flex items-end"}>
 							<span className={"font-bold text-4xl"}>{minutes}</span>
-							<span className={"text-xl font-medium text-lightSecondary dark:text-darkSecondary"}>Mn</span>
+							<span className={"text-xl font-medium text-lightSecondary dark:text-darkSecondary"}>Min</span>
 						</div> : <></>
 					}
 					{
@@ -39,14 +39,14 @@ function AppDonut({appUsages}) {
 					}
 
 				</div>
-				<svg className={"aspect-square"} style={{height: "15rem"}}>
+				<svg id={"donut"} className={"aspect-square"} style={{height: "15rem"}}>
 					<circle cx={"50%"} cy={"50%"} r={`${radius}%`} fill={"none"} className={"donut-back"} strokeWidth={`${strokeWidth}%`}></circle>
 					{
 						appUsages.map((k, i) => {
 							let w = ((k.usage * 100) / (total || 100));
 							sum += w;
 
-							return <circle key={i.toString()}
+							return <circle key={i.toString()} aria-description={k.path.toString()}
 								strokeDasharray={`${w} ${pathLength - w}`} pathLength={pathLength} strokeDashoffset={-(sum - w)}
 								strokeLinecap={strokeLinecap} strokeLinejoin={strokeLinejoin}
 								cx={"50%"} cy={"50%"} r={`${radius}%`} fill={"none"} stroke={colors[((i % 4) + Number.parseInt(i / 4)) % 4]} strokeWidth={`${strokeWidth}%`}></circle>

@@ -3,6 +3,7 @@ import path from "path";
 import {logger} from "./Logger";
 import * as child_process from "child_process";
 import DB from "./DB";
+import {log} from "@vercel/webpack-asset-relocator-loader";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if(require('electron-squirrel-startup')) {
@@ -143,10 +144,26 @@ app.on('ready', () => {
 
     // for the dashboard overview graphs
     ipcMain.handle('screenLogs', (_event, range) => {
-        return JSON.stringify(DB.processScreenLogs(DB.getScreenLogs(Date.now() + (range * (36e5 * 24)))));
+        if(range <= 0) {
+            return JSON.stringify(DB.processScreenLogs(DB.getScreenLogs(Date.now() + (range * (36e5 * 24)))));
+        }
+        else {
+            const logs = {};
+            const date = Date.now();
+            for(let i = range; i > range - 7; i--) {
+                let _d = date - (i * (36e5 * 24));
+                const dayLog = DB.processScreenLogs(DB.getScreenLogs(_d));
+                let dayUsage = 0;
+                for(let i of dayLog) {
+                    dayUsage += Math.abs(i.end - i.start);
+                }
+                logs[_d] = {usage: dayUsage, sessions: dayLog.length};
+            }
+            return JSON.stringify(logs);
+        }
     })
     ipcMain.handle('appUsages', (_event, range) => {
-        return JSON.stringify(DB.getApplicationUsage(Date.now() + (range * (36e5 * 24))));
+        return JSON.stringify(DB.getApplicationUsage(Date.now() - (range * (36e5 * 24))));
     })
 
     // arguments passed while starting the app is logged

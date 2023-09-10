@@ -14,17 +14,45 @@ function Overview() {
 	const [timeRange, setTimeRange] = useState(0);
 	const [appUsages, setAppUsages] = useState([{path: "", usage: 0}]);
 
+	const getAppUsages = (timeR = timeRange) => {
+		console.log(timeR);
+		window.electronAPI.getAppUsages(timeR).then(r => {
+			setAppUsages(JSON.parse(r)
+				.sort((a, b) => a.usage > b.usage ? -1 : a.usage < b.usage ? 1 : 0)
+				.filter((a) => a.usage > 6e4));
+		});
+	}
+
 	useEffect(() => {
 		window.electronAPI.getScreenLogs(timeRange).then(r => {
 			setScreenTime(JSON.parse(r))
 		});
 	}, [timeRange]);
 
-	useEffect(() => {
-		window.electronAPI.getAppUsages(timeRange).then(r => {
-			setAppUsages(JSON.parse(r).sort((a, b) => a.usage > b.usage ? -1 : a.usage < b.usage ? 1 : 0));
-		})
-	}, [timeRange]);
+	useEffect(getAppUsages, [timeRange]);
+
+	const callAppUsage = (timeR) => {
+		getAppUsages(timeR);
+	}
+
+	function handleHover(e) {
+		if(e.type === "mouseover" && e.target.tagName === "LI") {
+			for(let i of document.querySelectorAll('svg[id=donut] > circle')) {
+				if(i.getAttribute("aria-description") !== e.target.id) {
+					i.style.filter = 'grayscale(1.2)';
+				}
+			}
+		} else if(e.type === "mouseleave" && e.target.tagName === "LI") {
+			for(let i of document.querySelectorAll('svg[id=donut] > circle')) {
+					i.style.filter = '';
+			}
+		}
+	}
+
+	function toggleTimeRange() {
+		setScreenTime([]);
+		setTimeRange(timeRange <= 0 ? 7 : 0);
+	}
 
 
 	return (
@@ -39,12 +67,18 @@ function Overview() {
 								<span className={"text-sm text-lightSecondary dark:text-darkSecondary"}>Your today's active sessions</span>
 							</div>
 							<div className={"flex items-center but relative rounded-md"}>
-								<button onClick={() => setTimeRange(timeRange - 1)}  className={"material-icons text-lg hover-but h-full"}>arrow_left</button>
-								<button className={"whitespace-nowrap hover-but text-xs p-2.5 font-OpenSans h-full"}>{new Date(Date.now() + (timeRange * 36e5 * 24)).toDateString()}</button>
-								<button onClick={() => setTimeRange(timeRange + 1)} className={`material-icons text-lg hover-but h-full disabled:text-slate-600`} disabled={timeRange === 0}>arrow_right</button>
+								<button onClick={() => setTimeRange(timeRange > 0 ? timeRange + 7 : timeRange - 1)}  className={"material-icons text-lg hover-but h-full"}>arrow_left</button>
+								<button onClick={toggleTimeRange} className={"whitespace-nowrap hover-but text-xs p-2.5 font-OpenSans h-full"}>
+									{ timeRange <= 0 ? new Date(Date.now() + (timeRange * 36e5 * 24)).toDateString() :
+										`${new Date(Date.now() - ((timeRange - 1) * 36e5 * 24)).toDateString()} - ${new Date(Date.now() - ((timeRange - 7) * 36e5 * 24)).toDateString()}`}
+								</button>
+								<button onClick={() => {
+									if(timeRange === 7) setScreenTime([]);
+									setTimeRange(timeRange > 0 ? timeRange - 7 : timeRange + 1)
+								}} className={`material-icons text-lg hover-but h-full disabled:text-slate-600`} disabled={timeRange === 0}>arrow_right</button>
 							</div>
 						</div>
-						<Timeline range={timeRange} data={screenTime} epoch={getEpoch()} />
+						<Timeline callAppUsage={callAppUsage} range={timeRange} data={screenTime} epoch={getEpoch()} />
 					</div>
 				</section>
 
@@ -56,15 +90,15 @@ function Overview() {
 						</div>
 						<div className={"flex w-full items-start"}>
 							<AppDonut appUsages={appUsages} />
-							<ul className={"flex flex-col w-2/3 px-4"} style={{maxHeight: "240px", overflowY: "auto"}}>
+							<ul className={"flex flex-col w-2/3 px-4"} style={{height: "240px", overflowY: "auto"}}>
 								{
-									appUsages.map((k, i) => {
+									appUsages.length ? appUsages.map((k, i) => {
 
 										const hrs = Number.parseInt(k.usage / 36e5);
 										const minutes = Number.parseInt((k.usage % 36e5) / 6e4);
 
 										// if(hrs || minutes)
-										return <li key={i.toString()}
+										return <li key={i.toString()} id={k.path} onMouseLeave={handleHover} onMouseOverCapture={handleHover}
 												   className={"flex items-center px-4 py-3 bg-gray-100 dark:bg-darkSecBG hover:bg-gray-300 hover:dark:bg-darkBG hover:cursor-pointer rounded-md mb-2"}>
 											<span className={"overflow-clip max-w-xs whitespace-nowrap overflow-ellipsis font-semibold text-sm"}>{k.path.slice(0, k.path.lastIndexOf("\\"))}</span>
 											<span className={"font-semibold whitespace-nowrap text-sm mr-4"}>\{k.path.split("\\").pop()}</span>
@@ -73,7 +107,7 @@ function Overview() {
 												{minutes ? minutes.toString() + "min": hrs ? "" : "< 0min"}
 											</span>
 										</li>
-									})
+									}) : timeRange > 0 ? <li className={"text-lightSecondary dark:text-gray-500 text-sm my-auto w-full flex justify-center items-center"}>Select a date from above chart to see the details.</li> : <></>
 								}
 							</ul>
 						</div>

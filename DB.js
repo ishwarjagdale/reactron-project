@@ -85,6 +85,8 @@ class DB {
 		DB.statements.appUsage = DB.handler.prepare(`SELECT * FROM appUsage WHERE date = ? AND app = ?`);
 
 		DB.statements.insertAppUsage = DB.handler.prepare(`INSERT INTO appUsage VALUES (?, ?, ?)`);
+
+		DB.statements.toStore.run('lastProcess', null);
 	}
 
 	static insertScreenLog(event, date = Date.now()) {
