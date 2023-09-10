@@ -61,7 +61,7 @@ function Timeline({callAppUsage, className = '', range = 0, data = [], epoch}) {
 												const hours = Number.parseInt(data[date].usage / 36e5);
 												const minutes = Number.parseInt((data[date].usage % 36e5) / 6e4);
 
-												return <div onClick={() => callAppUsage(range - index)} title={`${hours}hr ${minutes}min`} className={"relative h-full"} key={index.toString()} style={{width: `5%`}}>
+												return <div onClick={() => callAppUsage(range - index)} title={`${hours}hr ${minutes}min\n${new Date(Number.parseInt(date)).toDateString()}`} className={"relative h-full"} key={index.toString()} style={{width: `5%`}}>
 													<hr className={"w-full absolute bottom-0 rounded border-0 z-10 session h-full"}/>
 													<hr className={"w-full absolute bottom-0 rounded bg-blue-400 border-0 z-10"}
 														style={{height: `${height}%`}}/>

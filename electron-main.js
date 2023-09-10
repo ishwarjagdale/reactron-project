@@ -149,7 +149,7 @@ app.on('ready', () => {
         else {
             const logs = {};
             const date = Date.now();
-            for(let i = range; i > range - 7; i--) {
+            for(let i = range - 1; i >= range - 7; i--) {
                 let _d = date - (i * (36e5 * 24));
                 const dayLog = DB.processScreenLogs(DB.getScreenLogs(_d));
                 let dayUsage = 0;
