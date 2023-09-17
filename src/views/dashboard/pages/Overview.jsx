@@ -15,7 +15,6 @@ function Overview() {
 	const [appUsages, setAppUsages] = useState([{path: "", usage: 0}]);
 
 	const getAppUsages = (timeR = timeRange) => {
-		console.log(timeR);
 		window.electronAPI.getAppUsages(timeR).then(r => {
 			setAppUsages(JSON.parse(r)
 				.sort((a, b) => a.usage > b.usage ? -1 : a.usage < b.usage ? 1 : 0)
@@ -107,7 +106,7 @@ function Overview() {
 												{minutes ? minutes.toString() + "min": hrs ? "" : "< 0min"}
 											</span>
 										</li>
-									}) : timeRange > 0 ? <li className={"text-lightSecondary dark:text-gray-500 text-sm my-auto w-full flex justify-center items-center"}>Select a date from above chart to see the details.</li> : <></>
+									}) : timeRange > 0 ? <li className={"text-lightSecondary dark:text-gray-500 text-sm my-auto w-full flex justify-center items-center"}>Select a date from above graph to see the details.</li> : <></>
 								}
 							</ul>
 						</div>

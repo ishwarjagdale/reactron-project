@@ -79,7 +79,7 @@ function WelcomePage() {
 					<span className={"p-2 text-md text-lightSecondary dark:text-darkSecondary"}>Total screen time tracked today</span>
 				</div>
 				<div className={"flex flex-col items-center p-4"}>
-					<span className={"text-lightPrimary dark:text-darkPrimary text-2xl p-1"}>{ greet }, <b className={"font-semibold"}>Ishwar</b></span>
+					<span className={"text-lightPrimary dark:text-darkPrimary text-xl p-1"}>{ greet }, <b className={"font-bold"}>Ishwar</b></span>
 					<span className={"text-lightSecondary dark:text-darkSecondary text-sm"}>Let's see how you're doing</span>
 					<Link to={"/dashboard"} className="material-icons pt-8 text-lightSecondary dark:text-darkSecondary hover:text-black hover:dark:text-blue-400 pb-2">keyboard_double_arrow_down</Link>
 				</div>

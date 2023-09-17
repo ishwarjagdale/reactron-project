@@ -14,6 +14,7 @@ import WelcomePage from "./views/WelcomePage.jsx";
 import Dashboard from "./views/dashboard/Dashboard.jsx";
 import Overview from "./views/dashboard/pages/Overview.jsx";
 import Settings from "./views/dashboard/pages/Settings.jsx";
+import Blinker from "./views/dashboard/pages/Blinker.jsx";
 
 function WindowLayout() {
 
@@ -41,7 +42,7 @@ function WindowLayout() {
 
                 <div className={"flex items-center"}>
                     {
-                        location.pathname !== "/" && <Link to={"/"} className={"mx-6 material-icons hover:text-blue-400 rounded-full"}>keyboard_double_arrow_left</Link>
+                        location.pathname !== "/" && <Link to={"/"} className={"mx-3 material-icons hover:text-blue-400 rounded-full"}>keyboard_double_arrow_left</Link>
                     }
                     <div className={"hidden items-center"}>
                         {/*  Window Icon  */}
@@ -87,6 +88,18 @@ export function render() {
                             element: <Overview />
                         },
                         {
+                            path: "/dashboard/blinker",
+                            element: <Blinker />
+                        },
+                        {
+                            path: "/dashboard/hydra",
+                            element: <></>
+                        },
+                        {
+                            path: "/dashboard/medicine",
+                            element: <></>
+                        },
+                        {
                             path: "/dashboard/settings",
                             element: <Settings />
                         }
@@ -95,7 +108,7 @@ export function render() {
             ]
         }
     ], {
-        initialEntries: ["/", "/dashboard"],
+        initialEntries: ["/", "/dashboard/blinker"],
         initialIndex: 1
     });
 

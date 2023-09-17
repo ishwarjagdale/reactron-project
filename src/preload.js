@@ -18,6 +18,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     getAppUsages: (range) => {
         return ipcRenderer.invoke('appUsages', range);
-    }
+    },
     // getScreenTime: (callback) => ipcRenderer.on('screenTime', callback)
+    getConfig: (key) => {
+        return ipcRenderer.invoke('getConfig', key);
+    },
+
+    toConfig: (key, status, options) => {
+        return ipcRenderer.invoke('toConfig', key, status, options);
+    }
 })

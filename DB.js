@@ -1,13 +1,13 @@
 import path from "path";
-import {app} from "electron";
+import {app, Notification} from "electron";
 
 const Database = require('better-sqlite3');
 
 
-function getDate(date=null) {
+function getDate(date = null) {
 	let today;
-	if(date !== null) {
-		if(typeof date === "number") {
+	if (date !== null) {
+		if (typeof date === "number") {
 			today = new Date(date);
 		} else {
 			today = date;
@@ -25,10 +25,10 @@ function getDate(date=null) {
 	return dd + '-' + mm + '-' + yyyy;
 }
 
-function getEpoch(date=null) {
+function getEpoch(date = null) {
 	let today;
-	if(date !== null) {
-		if(typeof date === "number") {
+	if (date !== null) {
+		if (typeof date === "number") {
 			today = new Date(date);
 		} else {
 			today = date;
@@ -44,6 +44,9 @@ class DB {
 	static dbpath = null;
 	static handler = new Database('');
 	static statements = {};
+
+	// to disable tracking apps when screen is locked
+	static disableAppLogging = false;
 
 	static initApp() {
 		DB.dbpath = app.getPath("userData");
@@ -65,6 +68,10 @@ class DB {
                                 key TEXT PRIMARY KEY,
                                 value BLOB
                             );`).run();
+		DB.handler.prepare(`CREATE TABLE IF NOT EXISTS config
+                            (
+                                key TEXT PRIMARY KEY, status BOOLEAN, options BLOB
+                            );`).run();
 
 		DB.statements.insertScreenLog = DB.handler.prepare(`INSERT INTO screenTime
                                                             VALUES (?, ?);`);
@@ -73,9 +80,14 @@ class DB {
                                                          WHERE key = ?`);
 		DB.statements.toStore = DB.handler.prepare(`REPLACE INTO store
                                                         VALUES (?, ?)`);
+		DB.statements.getConfig = DB.handler.prepare(`SELECT *
+                                                         FROM config
+                                                         WHERE key = ?`);
+		DB.statements.toConfig = DB.handler.prepare(`REPLACE INTO config
+                                                        VALUES (?, ?, ?)`);
 		DB.statements.getScreenLogs = DB.handler.prepare(`SELECT *
                                                           FROM screenTime
-                                                          WHERE STRFTIME('%d-%m-%Y', DATETIME(ROUND(date / 1000), 'unixepoch')) = ?`);
+                                                          WHERE STRFTIME('%d-%m-%Y', DATETIME(ROUND(date / 1000), 'unixepoch'), 'localtime') = ?`);
 
 		DB.statements.allAppUsage = DB.handler.prepare(`SELECT app, SUM(use) as usage
                                                         FROM appUsage
@@ -93,7 +105,7 @@ class DB {
 
 		const lastLog = DB.handler.prepare(`SELECT date, event
                                             FROM screenTime
-                                            WHERE STRFTIME('%d-%m-%Y', DATETIME(ROUND(date / 1000), 'unixepoch')) = ?
+                                            WHERE STRFTIME('%d-%m-%Y', DATETIME(ROUND(date / 1000), 'unixepoch'), 'localtime') = ?
                                             ORDER BY date DESC
                                                 LIMIT 1;`
 		).get(getDate());
@@ -111,7 +123,7 @@ class DB {
 			if (event === "resume") {
 				DB.statements.insertScreenLog.run(date, 1);
 			} else {
-				let epo = new Date().getMilliseconds();
+				let epo = new Date().getTime() - getEpoch();
 				DB.statements.insertScreenLog.run(epo, 0);
 				currentScreenTime += epo;
 			}
@@ -122,7 +134,7 @@ class DB {
 				currentScreenTime += Math.abs(date - lastLog.date);
 			}
 		}
-		DB.statements.toStore.run(currentScreenTime, 'currentScreenTime');
+		DB.statements.toStore.run('currentScreenTime', currentScreenTime);
 
 	}
 
@@ -133,7 +145,29 @@ class DB {
 	static processScreenLogs(logs, ms = false) {
 		let timeInMilSeconds = 0;
 		const procLogs = [];
+		let temp = [];
+		logs.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+
+		let i = 0;
+		while(i < logs.length) {
+			let last = temp[temp.length - 1];
+			if(!last) {
+				temp.push(logs[i]);
+			} else {
+				if(last.event === logs[i].event) {
+					temp.pop();
+					temp.push(logs[i]);
+				} else {
+					temp.push(logs[i]);
+				}
+			}
+			i++;
+		}
+
+		logs = temp;
+
 		if (logs.length) {
+
 			const epoch = getEpoch(logs[0].date);
 			const nEpoch = epoch + (36e5 * 24);
 			let i = 0;
@@ -174,6 +208,8 @@ class DB {
 	}
 
 	static logApplicationChange(chunk) {
+		if(DB.disableAppLogging) return
+
 		try {
 			chunk = chunk.toString().split('\n').map(r => r.trim()).filter(r => r.length).pop();
 			chunk = JSON.parse(chunk);
@@ -192,7 +228,7 @@ class DB {
 			const today = getEpoch();
 			const then = getEpoch(lastProcess.epoch);
 
-			if(today !== then) {
+			if (today !== then) {
 				let usageOnThatDay = (then + 36e5 * 24) - lastProcess.epoch;
 				let usageToday = Date.now() - today;
 
@@ -208,12 +244,12 @@ class DB {
 
 		DB.statements.toStore.run(
 			'lastProcess',
-			chunk ? JSON.stringify({process: chunk.process, epoch: Date.now()}): null
+			chunk ? JSON.stringify({process: chunk.process, epoch: Date.now()}) : null
 		);
 
 	}
 
-	static getApplicationUsage(date=null) {
+	static getApplicationUsage(date = null) {
 		const apps = DB.statements.allAppUsage.all(getEpoch(date));
 		return apps.map(r => {
 			return {

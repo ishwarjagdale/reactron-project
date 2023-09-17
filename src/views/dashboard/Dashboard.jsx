@@ -1,27 +1,35 @@
 import React, {useEffect, useState} from "react";
 import Sidebar from "../../components/Sidebar.jsx";
-import {Outlet, useNavigate} from "react-router-dom";
+import {Outlet, useLocation, useNavigate} from "react-router-dom";
 
 function Dashboard() {
 	const navigate = useNavigate();
-	const [view, setView] = useState(0);
+	const location = useLocation();
+	const [view, setView] = useState(-1);
 
 	const sideItems = [
-		{mtIcon: "data_usage", text: "Overview"},
-		{mtIcon: "settings", text: "Settings"}
+		{mtIcon: "data_usage", text: "Overview", url: "overview"},
+		{mtIcon: "visibility", text: "Blinker", url: "blinker"},
+		{mtIcon: "water_drop", text: "Water Reminder", url: "hydra"},
+		{mtIcon: "vaccines", text: "Take your medicines", url: "medicine"},
+		{mtIcon: "settings", text: "Settings", url: "settings"}
 	];
 
 	const changeView = (index) => {
 		setView(index);
-		switch (index) {
-			case 0: navigate("/dashboard/overview"); break;
-			case 1: navigate("/dashboard/settings"); break;
-			default: changeView(0);
-		}
+		navigate(`/dashboard/${sideItems[index].url}`);
 	}
 
 	useEffect(() => {
-		changeView(0);
+		let loc = (location.pathname.split("/")[2]);
+		let found = false;
+		sideItems.forEach((i, k) => {
+			if(i.url === loc) {
+				found = true;
+				changeView(k);
+			}
+		});
+		if(!found) changeView(0);
 	}, []);
 
 	return (
