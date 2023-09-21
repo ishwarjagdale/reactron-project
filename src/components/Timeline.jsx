@@ -56,7 +56,7 @@ function Timeline({callAppUsage, className = '', range = 0, data = [], epoch}) {
 									<div className={"flex w-full absolute h-full items-end justify-around"}>
 										{
 											Object.keys(data).map((date, index) => {
-												const height = (100 * data[date].usage) / (yMax * 36e5);
+												const height = (100 * data[date].usage) / ((yMax - 1) * 36e5);
 
 												const hours = Number.parseInt(data[date].usage / 36e5);
 												const minutes = Number.parseInt((data[date].usage % 36e5) / 6e4);
@@ -85,7 +85,7 @@ function Timeline({callAppUsage, className = '', range = 0, data = [], epoch}) {
 									  className={"text-xs text-gray-600"}>{
 									range <= 0 ? i % 2 === 0 ? (
 										i.toString().padStart(2, '0') + ":00"
-									) : '' : `${new Date(Date.now() - ((range - i - 1) * 36e5 * 24)).toDateString()}`
+									) : '' : `${new Date(Date.now() - ((range - i) * 36e5 * 24)).toDateString()}`
 								}</span>
 							)
 						}

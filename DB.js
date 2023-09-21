@@ -48,15 +48,16 @@ class DB {
 	// to disable tracking apps when screen is locked
 	static disableAppLogging = false;
 
-	static initApp() {
+	static init() {
 		DB.dbpath = app.getPath("userData");
 		DB.handler = new Database(path.join(DB.dbpath, "database.db"));
 
-		DB.handler.prepare(`CREATE TABLE IF NOT EXISTS screenTime
-                            (
-                                date DATETIME PRIMARY KEY,
-                                event BOOLEAN NOT NULL
-                            );`).run()
+		DB.handler.prepare(`CREATE TABLE IF NOT EXISTS screenSessions 
+							(
+							    startTime DATETIME, endTime DATETIME,
+							    PRIMARY KEY(startTime)
+    						);`).run();
+
 		DB.handler.prepare(`CREATE TABLE IF NOT EXISTS appUsage
                             (
                                 app TEXT,
@@ -73,8 +74,6 @@ class DB {
                                 key TEXT PRIMARY KEY, status BOOLEAN, options BLOB
                             );`).run();
 
-		DB.statements.insertScreenLog = DB.handler.prepare(`INSERT INTO screenTime
-                                                            VALUES (?, ?);`);
 		DB.statements.getFromStore = DB.handler.prepare(`SELECT *
                                                          FROM store
                                                          WHERE key = ?`);
@@ -85,10 +84,6 @@ class DB {
                                                          WHERE key = ?`);
 		DB.statements.toConfig = DB.handler.prepare(`REPLACE INTO config
                                                         VALUES (?, ?, ?)`);
-		DB.statements.getScreenLogs = DB.handler.prepare(`SELECT *
-                                                          FROM screenTime
-                                                          WHERE STRFTIME('%d-%m-%Y', DATETIME(ROUND(date / 1000), 'unixepoch'), 'localtime') = ?`);
-
 		DB.statements.allAppUsage = DB.handler.prepare(`SELECT app, SUM(use) as usage
                                                         FROM appUsage
                                                         WHERE date = ?
@@ -99,112 +94,6 @@ class DB {
 		DB.statements.insertAppUsage = DB.handler.prepare(`INSERT INTO appUsage VALUES (?, ?, ?)`);
 
 		DB.statements.toStore.run('lastProcess', null);
-	}
-
-	static insertScreenLog(event, date = Date.now()) {
-
-		const lastLog = DB.handler.prepare(`SELECT date, event
-                                            FROM screenTime
-                                            WHERE STRFTIME('%d-%m-%Y', DATETIME(ROUND(date / 1000), 'unixepoch'), 'localtime') = ?
-                                            ORDER BY date DESC
-                                                LIMIT 1;`
-		).get(getDate());
-
-		let cst = DB.statements.getFromStore.get('currentScreenTime');
-		let currentScreenTime;
-		if (cst === undefined) {
-			DB.statements.toStore.run('currentScreenTime', 0);
-			currentScreenTime = 0;
-		} else {
-			currentScreenTime = cst.value;
-		}
-
-		if (!lastLog) {
-			if (event === "resume") {
-				DB.statements.insertScreenLog.run(date, 1);
-			} else {
-				let epo = new Date().getTime() - getEpoch();
-				DB.statements.insertScreenLog.run(epo, 0);
-				currentScreenTime += epo;
-			}
-		} else if (Boolean(lastLog.event) !== (event === "resume")) {
-			DB.statements.insertScreenLog.run(date, event === "resume" ? 1 : 0);
-
-			if (lastLog.event) {
-				currentScreenTime += Math.abs(date - lastLog.date);
-			}
-		}
-		DB.statements.toStore.run('currentScreenTime', currentScreenTime);
-
-	}
-
-	static getScreenLogs(date = null) {
-		return DB.statements.getScreenLogs.all(getDate(date));
-	}
-
-	static processScreenLogs(logs, ms = false) {
-		let timeInMilSeconds = 0;
-		const procLogs = [];
-		let temp = [];
-		logs.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
-
-		let i = 0;
-		while(i < logs.length) {
-			let last = temp[temp.length - 1];
-			if(!last) {
-				temp.push(logs[i]);
-			} else {
-				if(last.event === logs[i].event) {
-					temp.pop();
-					temp.push(logs[i]);
-				} else {
-					temp.push(logs[i]);
-				}
-			}
-			i++;
-		}
-
-		logs = temp;
-
-		if (logs.length) {
-
-			const epoch = getEpoch(logs[0].date);
-			const nEpoch = epoch + (36e5 * 24);
-			let i = 0;
-			if (logs[i].event === 0) {
-				procLogs.push({start: 0, end: logs[i].date - epoch});
-				timeInMilSeconds += logs[i].date - epoch
-				i += 1;
-			}
-			while (i + 1 < logs.length) {
-				procLogs.push({start: logs[i].date - epoch, end: logs[i + 1].date - epoch});
-				timeInMilSeconds += (logs[i + 1].date - epoch) - (logs[i].date - epoch);
-				i += 2;
-			}
-			while (i < logs.length) {
-				procLogs.push({start: logs[i].date - epoch, end: Math.min(nEpoch, Date.now()) - epoch});
-				timeInMilSeconds += (Math.min(nEpoch, Date.now()) - epoch) - (logs[i].date - epoch);
-				i += 1;
-			}
-		}
-		return ms ? timeInMilSeconds : procLogs;
-
-	}
-
-	static computeScreenTime(timeInMilSeconds) {
-		let seconds = Number.parseInt((timeInMilSeconds / 1000).toString());
-		let minutes = Number.parseInt((seconds / 60).toString());
-		let hours = Number.parseInt((minutes / 60).toString());
-
-		hours %= 24;
-		minutes %= 60;
-		seconds %= 60;
-
-		return {
-			hours: hours,
-			minutes: minutes,
-			seconds: seconds
-		};
 	}
 
 	static logApplicationChange(chunk) {

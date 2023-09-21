@@ -3,7 +3,10 @@ import path from "path";
 import {logger} from "./Logger";
 import * as child_process from "child_process";
 import DB from "./DB";
-import FeaturePackage from "./Features";
+import Blinker from "./features/Blinker";
+import Sessions from "./features/Sessions";
+import {log} from "@vercel/webpack-asset-relocator-loader";
+import R202020 from "./features/20-20-20";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -99,17 +102,18 @@ const createTray = () => {
 // When application is ready to launch
 // handles the window frame actions
 app.on('ready', () => {
-	DB.initApp(app.getPath('userData'));
-	FeaturePackage.initialize();
+	DB.init(app.getPath('userData'));
 
 	// if the app starts on boot, add the shutdown time to the log
 	if (process.argv.includes("--start-up")) {
 		const bootTime = child_process.spawnSync("pwsh", [`-Command`, 'Get-WinEvent -FilterHashtable @{logname = ‘System’; id = 1074} -MaxEvents 1 | Select -ExpandProperty "TimeCreated"']);
-		DB.insertScreenLog("suspend", new Date(bootTime.stdout.toString()).getTime());
+		Sessions.updateSession(new Date(bootTime.stdout.toString()).getTime());
 	}
 
-	// adding a screenTime log if empty
-	DB.insertScreenLog("resume");
+	Blinker.init();
+	Sessions.init();
+	R202020.init();
+
 
 	appReader = child_process.spawn(
 		process.env.NODE_ENV === 'development' ?
@@ -135,24 +139,22 @@ app.on('ready', () => {
 
 	// for the welcome page timer
 	ipcMain.handle('screenTime', (_event) => {
-		return JSON.stringify(DB.computeScreenTime(DB.processScreenLogs(DB.getScreenLogs(), true)));
+		return JSON.stringify(Sessions.getScreenTime(true));
 	});
 
 	// for the dashboard overview graphs
 	ipcMain.handle('screenLogs', (_event, range) => {
 		if (range <= 0) {
-			return JSON.stringify(DB.processScreenLogs(DB.getScreenLogs(Date.now() + (range * (36e5 * 24)))));
+			return JSON.stringify(Sessions.getRecords(Date.now() + (range * (36e5 * 24))));
 		} else {
 			const logs = {};
 			const date = Date.now();
-			for (let i = range - 1; i >= range - 7; i--) {
+			for (let i = range; i >= range - 6; i--) {
 				let _d = date - (i * (36e5 * 24));
-				const dayLog = DB.processScreenLogs(DB.getScreenLogs(_d));
-				let dayUsage = 0;
-				for (let i of dayLog) {
-					dayUsage += Math.abs(i.end - i.start);
-				}
-				logs[_d] = {usage: dayUsage, sessions: dayLog.length};
+				const dayUsage = Sessions.getScreenTime(false, _d);
+				const dayLogs = Sessions.getRecords(_d);
+
+				logs[_d] = {usage: dayUsage, sessions: dayLogs.length};
 			}
 			return JSON.stringify(logs);
 		}
@@ -167,10 +169,20 @@ app.on('ready', () => {
 	})
 	ipcMain.handle('toConfig', (_event, key, status, options) => {
 		DB.statements.toConfig.run(key, status ? 1 : 0, options);
-		if (Object.keys(FeaturePackage.features).includes(key)) {
-			FeaturePackage.features[key].status = status;
-			if (status) {
-				FeaturePackage.features[key].call();
+		switch (key) {
+			case "blinker": {
+				Blinker.status = status;
+				if (status) {
+					Blinker.run();
+				}
+				break;
+			}
+			case "20-20-20": {
+				R202020.status = status;
+				if (status) {
+					R202020.run();
+				}
+				break;
 			}
 		}
 
@@ -189,19 +201,21 @@ app.on('ready', () => {
 	// --start-up argument is used to determine if the application was launched start at startup or not
 	if (!process.argv.includes('--start-up') && !mainWindow) {
 		createWindow();
-		mainWindow?.webContents.send('screenTime', JSON.stringify(DB.computeScreenTime(DB.processScreenLogs(DB.getScreenLogs(), true))));
+		mainWindow?.webContents.send('screenTime', JSON.stringify(Sessions.getScreenTime(true)));
 	}
 
 
 	powerMonitor.on('lock-screen', () => {
 		DB.logApplicationChange("");
 		DB.disableAppLogging = true;
-		DB.insertScreenLog("suspend");
+		Sessions.end();
+		R202020.end();
 	});
 	powerMonitor.on('unlock-screen', () => {
-		DB.insertScreenLog("resume");
+		Sessions.init();
+		R202020.run();
 		DB.disableAppLogging = false;
-		mainWindow?.webContents.send('updateScreenTime', JSON.stringify(DB.computeScreenTime(DB.processScreenLogs(DB.getScreenLogs(), true))));
+		mainWindow?.webContents.send('updateScreenTime', JSON.stringify(Sessions.getScreenTime(true)));
 	});
 
 
@@ -220,5 +234,5 @@ app.on('activate', () => {
 app.on('will-quit', () => {
 	appReader.kill();
 	DB.logApplicationChange("");
-	DB.insertScreenLog("suspend");
+	Sessions.updateSession();
 })

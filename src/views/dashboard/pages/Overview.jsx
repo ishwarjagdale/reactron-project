@@ -22,17 +22,21 @@ function Overview() {
 		});
 	}
 
-	useEffect(() => {
+	const getScreenLogs = (timeR = timeRange) => {
 		window.electronAPI.getScreenLogs(timeRange).then(r => {
 			setScreenTime(JSON.parse(r))
 		});
-	}, [timeRange]);
+	}
 
+	useEffect(getScreenLogs, [timeRange]);
 	useEffect(getAppUsages, [timeRange]);
 
-	const callAppUsage = (timeR) => {
-		getAppUsages(timeR);
-	}
+	useEffect(() => {
+		const interval = setInterval(() => {
+			getScreenLogs(); getAppUsages();
+		}, 6e5);
+		return () => clearInterval(interval);
+	});
 
 	function handleHover(e) {
 		if(e.type === "mouseover" && e.target.tagName === "LI") {
@@ -50,7 +54,7 @@ function Overview() {
 
 	function toggleTimeRange() {
 		setScreenTime([]);
-		setTimeRange(timeRange <= 0 ? 7 : 0);
+		setTimeRange(timeRange <= 0 ? 6 : 0);
 	}
 
 
@@ -69,15 +73,18 @@ function Overview() {
 								<button onClick={() => setTimeRange(timeRange > 0 ? timeRange + 7 : timeRange - 1)}  className={"material-icons text-lg hover-but h-full"}>arrow_left</button>
 								<button onClick={toggleTimeRange} className={"whitespace-nowrap hover-but text-xs p-2.5 font-OpenSans h-full"}>
 									{ timeRange <= 0 ? new Date(Date.now() + (timeRange * 36e5 * 24)).toDateString() :
-										`${new Date(Date.now() - ((timeRange - 1) * 36e5 * 24)).toDateString()} - ${new Date(Date.now() - ((timeRange - 7) * 36e5 * 24)).toDateString()}`}
+										`${new Date(Date.now() - ((timeRange) * 36e5 * 24)).toDateString()} - ${new Date(Date.now() - ((timeRange - 6) * 36e5 * 24)).toDateString()}`}
 								</button>
 								<button onClick={() => {
-									if(timeRange === 7) setScreenTime([]);
+									if(timeRange === 6) {
+										setScreenTime([]);
+										setTimeRange(0);
+									} else
 									setTimeRange(timeRange > 0 ? timeRange - 7 : timeRange + 1)
 								}} className={`material-icons text-lg hover-but h-full disabled:text-slate-600`} disabled={timeRange === 0}>arrow_right</button>
 							</div>
 						</div>
-						<Timeline callAppUsage={callAppUsage} range={timeRange} data={screenTime} epoch={getEpoch()} />
+						<Timeline callAppUsage={(timeR) => getAppUsages(timeR)} range={timeRange} data={screenTime} epoch={getEpoch()} />
 					</div>
 				</section>
 

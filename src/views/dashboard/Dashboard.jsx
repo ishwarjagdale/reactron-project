@@ -10,8 +10,7 @@ function Dashboard() {
 	const sideItems = [
 		{mtIcon: "data_usage", text: "Overview", url: "overview"},
 		{mtIcon: "visibility", text: "Blinker", url: "blinker"},
-		{mtIcon: "water_drop", text: "Water Reminder", url: "hydra"},
-		{mtIcon: "vaccines", text: "Take your medicines", url: "medicine"},
+		{mtIcon: "notifications_active", text: "Reminders", url: "reminders"},
 		{mtIcon: "settings", text: "Settings", url: "settings"}
 	];
 

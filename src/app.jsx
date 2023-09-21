@@ -92,11 +92,7 @@ export function render() {
                             element: <Blinker />
                         },
                         {
-                            path: "/dashboard/hydra",
-                            element: <></>
-                        },
-                        {
-                            path: "/dashboard/medicine",
+                            path: "/dashboard/reminders",
                             element: <></>
                         },
                         {
