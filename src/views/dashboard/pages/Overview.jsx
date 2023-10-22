@@ -106,8 +106,18 @@ function Overview() {
 										// if(hrs || minutes)
 										return <li key={i.toString()} id={k.path} onMouseLeave={handleHover} onMouseOverCapture={handleHover}
 												   className={"flex items-center px-4 py-3 bg-gray-100 dark:bg-darkSecBG hover:bg-gray-300 hover:dark:bg-darkBG hover:cursor-pointer rounded-md mb-2"}>
-											<span className={"overflow-clip max-w-xs whitespace-nowrap overflow-ellipsis font-semibold text-sm"}>{k.path.slice(0, k.path.lastIndexOf("\\"))}</span>
-											<span className={"font-semibold whitespace-nowrap text-sm mr-4"}>\{k.path.split("\\").pop()}</span>
+											{
+												k.name || k.title ?
+													<>
+														<span title={k.path}
+															className={"overflow-clip max-w-xs whitespace-nowrap overflow-ellipsis font-semibold text-sm"}>{k.title ? k.title + " - " + k.name : k.name}</span>
+													</>
+													:
+													<>
+														<span className={"overflow-clip max-w-xs whitespace-nowrap overflow-ellipsis font-semibold text-sm"}>{k.path.slice(0, k.path.lastIndexOf("\\"))}</span>
+														<span className={"font-semibold whitespace-nowrap text-sm mr-4"}>\{k.path.split("\\").pop()}</span>
+													</>
+											}
 											<span className={"text-xs whitespace-nowrap ml-auto"}>
 												{hrs ? hrs.toString() + "hr " : ''}
 												{minutes ? minutes.toString() + "min": hrs ? "" : "< 0min"}

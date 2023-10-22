@@ -96,6 +96,14 @@ export function render() {
                             element: <></>
                         },
                         {
+                            path: "/dashboard/focus",
+                            element: <></>
+                        },
+                        {
+                            path: "/dashboard/todos",
+                            element: <></>
+                        },
+                        {
                             path: "/dashboard/settings",
                             element: <Settings />
                         }

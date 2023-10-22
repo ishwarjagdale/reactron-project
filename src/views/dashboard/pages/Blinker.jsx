@@ -61,7 +61,7 @@ function Blinker() {
 								to maintain the natural eye blinking rate.<br/>
 								Blinker uses visual cues such as showing an eye emoji at the center of your screen (default).
 							</span>
-							<button onClick={handleState}
+							<button onClick={() => handleState()}
 									className={`m-4 flex items-center ${status ? 'justify-end' : 'justify-start'} duration-300 transition-all ease-in p-1 border-2 ${status ? 'border-gray-600 dark:border-[#8fbc8f]' : 'border-gray-600'} rounded-full`}
 									style={{aspectRatio: "2/1", height: "1.75rem"}}>
 								<div
@@ -75,7 +75,7 @@ function Blinker() {
 				{/*<hr className={"border-gray-500 mb-8 dark:border-gray-800"}/>*/}
 
 				<section className={"w-full h-fit mb-2"}>
-					<div className={"flex items-start justify-between w-full mb-4 bg-darkSecBG p-6 pl-4 pr-0 rounded-lg"}>
+					<div className={"flex items-start justify-between w-full mb-4 bg-gray-300 dark:bg-darkSecBG p-6 pl-4 pr-0 rounded-lg"}>
 						<div className={"flex flex-col items-start justify-between w-full"}>
 								<span className={"text-xl font-OpenSans accent-border font-bold text-lightPrimary dark:text-darkPrimary"}>
 									The 20-20-20

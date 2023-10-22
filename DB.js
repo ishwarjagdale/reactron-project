@@ -62,7 +62,9 @@ class DB {
                             (
                                 app TEXT,
                                 date DATETIME NOT NULL,
-                                use DATETIME NOT NULL DEFAULT 0
+                                use DATETIME NOT NULL DEFAULT 0,
+                                name TEXT null,
+                                title TEXT null
                             );`).run();
 		DB.handler.prepare(`CREATE TABLE IF NOT EXISTS store
                             (
@@ -84,14 +86,14 @@ class DB {
                                                          WHERE key = ?`);
 		DB.statements.toConfig = DB.handler.prepare(`REPLACE INTO config
                                                         VALUES (?, ?, ?)`);
-		DB.statements.allAppUsage = DB.handler.prepare(`SELECT app, SUM(use) as usage
+		DB.statements.allAppUsage = DB.handler.prepare(`SELECT app, name, title, SUM(use) as usage
                                                         FROM appUsage
                                                         WHERE date = ?
                                                         GROUP BY app`);
 
 		DB.statements.appUsage = DB.handler.prepare(`SELECT * FROM appUsage WHERE date = ? AND app = ?`);
 
-		DB.statements.insertAppUsage = DB.handler.prepare(`INSERT INTO appUsage VALUES (?, ?, ?)`);
+		DB.statements.insertAppUsage = DB.handler.prepare(`INSERT INTO appUsage VALUES (?, ?, ?, ?, ?)`);
 
 		DB.statements.toStore.run('lastProcess', null);
 	}
@@ -121,19 +123,19 @@ class DB {
 				let usageOnThatDay = (then + 36e5 * 24) - lastProcess.epoch;
 				let usageToday = Date.now() - today;
 
-				DB.statements.insertAppUsage.run(lastProcess.process, then, usageOnThatDay);
-				DB.statements.insertAppUsage.run(lastProcess.process, today, usageToday);
+				DB.statements.insertAppUsage.run(lastProcess.process, then, usageOnThatDay, lastProcess.name, lastProcess.text);
+				DB.statements.insertAppUsage.run(lastProcess.process, today, usageToday, lastProcess.name, lastProcess.text);
 			} else {
 				let usageToday = Date.now() - lastProcess.epoch;
 
-				DB.statements.insertAppUsage.run(lastProcess.process, today, usageToday);
+				DB.statements.insertAppUsage.run(lastProcess.process, today, usageToday, lastProcess.name, lastProcess.text);
 			}
 
 		}
 
 		DB.statements.toStore.run(
 			'lastProcess',
-			chunk ? JSON.stringify({process: chunk.process, epoch: Date.now()}) : null
+			chunk ? JSON.stringify({...chunk, epoch: Date.now()}) : null
 		);
 
 	}
@@ -142,7 +144,8 @@ class DB {
 		const apps = DB.statements.allAppUsage.all(getEpoch(date));
 		return apps.map(r => {
 			return {
-				name: r.app,
+				name: r.name,
+				title: r.title,
 				path: r.app,
 				usage: r.usage
 			}

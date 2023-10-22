@@ -82,10 +82,10 @@ function Timeline({callAppUsage, className = '', range = 0, data = [], epoch}) {
 						{
 							Array.from(Array(range <= 0 ? 24 : 7).keys()).map((i) =>
 								<span key={i.toString()} style={{fontSize: '0.75rem'}}
-									  className={"text-xs text-gray-600"}>{
+									  className={`text-xs text-gray-600 ${range <= 0 && i % 2 !== 0 ? 'invisible': ''}`}>{
 									range <= 0 ? i % 2 === 0 ? (
 										i.toString().padStart(2, '0') + ":00"
-									) : '' : `${new Date(Date.now() - ((range - i) * 36e5 * 24)).toDateString()}`
+									) : '00:00' : `${new Date(Date.now() - ((range - i) * 36e5 * 24)).toDateString()}`
 								}</span>
 							)
 						}

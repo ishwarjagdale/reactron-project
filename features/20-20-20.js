@@ -7,7 +7,7 @@ class R202020 {
 	static evt = null;
 
 	static init() {
-		const record = DB.statements.getConfig.run('20-20-20');
+		const record = DB.statements.getConfig.get('20-20-20');
 
 		R202020.notification = new Notification({
 			title: "Baymax",
