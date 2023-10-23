@@ -86,7 +86,7 @@ class DB {
                                                          WHERE key = ?`);
 		DB.statements.toConfig = DB.handler.prepare(`REPLACE INTO config
                                                         VALUES (?, ?, ?)`);
-		DB.statements.allAppUsage = DB.handler.prepare(`SELECT app, name, title, SUM(use) as usage
+		DB.statements.allAppUsage = DB.handler.prepare(`SELECT app, (case when count(distinct (title)) = 1 then title else name end) as name, SUM(use) as usage
                                                         FROM appUsage
                                                         WHERE date = ?
                                                         GROUP BY app`);

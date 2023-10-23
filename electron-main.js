@@ -5,8 +5,10 @@ import * as child_process from "child_process";
 import DB from "./DB";
 import Blinker from "./features/Blinker";
 import Sessions from "./features/Sessions";
-import {log} from "@vercel/webpack-asset-relocator-loader";
 import R202020 from "./features/20-20-20";
+import { updateElectronApp } from "update-electron-app";
+
+updateElectronApp();
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -61,7 +63,7 @@ const createWindow = () => {
 	mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY).then(null);
 
 	// Open the DevTools.
-	mainWindow.webContents.openDevTools({mode: "detach"});
+	// mainWindow.webContents.openDevTools({mode: "detach"});
 };
 
 
@@ -83,6 +85,12 @@ const createTray = () => {
 			label: "Open",
 			click() {
 				if (!mainWindow) createWindow(); else mainWindow.show();
+			}
+		},
+		{
+			label: "Check for updates",
+			click() {
+				updateElectronApp();
 			}
 		},
 		{

@@ -112,8 +112,8 @@ export function render() {
             ]
         }
     ], {
-        initialEntries: ["/", "/dashboard/blinker"],
-        initialIndex: 1
+        initialEntries: ["/"],
+        initialIndex: 0
     });
 
     root.render(<RouterProvider router={router} />);
