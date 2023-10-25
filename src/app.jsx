@@ -15,6 +15,7 @@ import Dashboard from "./views/dashboard/Dashboard.jsx";
 import Overview from "./views/dashboard/pages/Overview.jsx";
 import Settings from "./views/dashboard/pages/Settings.jsx";
 import Blinker from "./views/dashboard/pages/Blinker.jsx";
+import Reminders from "./views/dashboard/pages/Reminders.jsx";
 
 function WindowLayout() {
 
@@ -93,7 +94,7 @@ export function render() {
                         },
                         {
                             path: "/dashboard/reminders",
-                            element: <></>
+                            element: <Reminders />
                         },
                         {
                             path: "/dashboard/focus",
@@ -112,8 +113,8 @@ export function render() {
             ]
         }
     ], {
-        initialEntries: ["/"],
-        initialIndex: 0
+        initialEntries: ["/", "/dashboard/reminders"],
+        initialIndex: 1
     });
 
     root.render(<RouterProvider router={router} />);
