@@ -1,4 +1,4 @@
-import {app, BrowserWindow, ipcMain, Tray, nativeImage, Menu, powerMonitor} from 'electron';
+import {app, BrowserWindow, ipcMain, Tray, nativeImage, Menu, powerMonitor, autoUpdater} from 'electron';
 import path from "path";
 import {logger} from "./Logger";
 import * as child_process from "child_process";
@@ -8,7 +8,9 @@ import Sessions from "./features/Sessions";
 import R202020 from "./features/20-20-20";
 import { updateElectronApp } from "update-electron-app";
 
-updateElectronApp();
+updateElectronApp({
+	notifyUser: true
+});
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
