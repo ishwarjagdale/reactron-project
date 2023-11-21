@@ -26,5 +26,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     toConfig: (key, status, options) => {
         return ipcRenderer.invoke('toConfig', key, status, options);
+    },
+
+    getAppVersion: () => {
+        return ipcRenderer.invoke('appVersion');
     }
 })

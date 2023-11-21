@@ -1,0 +1,336 @@
+{/*<div className={"flex items-center px-4"}>*/}
+    {/*<button className={"dark:text-gray-300 hover:bg-darkSecBG text-sm p-2 rounded material-icons"}>chevron_left</button>*/}
+    {/*<button className={"dark:text-gray-300 hover:bg-darkSecBG text-sm p-2 rounded material-icons"}>chevron_right</button>*/}
+{/*</div>*/}
+
+function childFunction() {
+	const ffi = require("ffi-napi");
+	const ref = require("ref-napi");
+	const wchar = require("ref-wchar-napi")
+
+
+	const msgType = ref.types.void
+	const msgPtr = ref.refType(msgType)
+	const EVENT_SYSTEM_FOREGROUND = 3
+	const WINEVENT_OUTOFCONTEXT = 0
+	const WINEVENT_SKPIOWNPROCESS = 2
+
+	const user32 = ffi.Library("user32", {
+		SetWinEventHook: ["int", ["int", "int", "pointer", "pointer", "int", "int", "int"]],
+		GetWindowTextW: ["int", ["pointer", "pointer", "int"]],
+		GetWindowTextLengthW: ["int", ["pointer"]],
+		GetMessageA: ["bool", [msgPtr, "int", "uint", "uint"]]
+	})
+
+	function getMessage() {
+		return user32.GetMessageA(ref.alloc(msgPtr), null, 0, 0)
+	}
+
+	const pfnWinEventProc = ffi.Callback("void", ["pointer", "int", "pointer", "long", "long", "int", "int"],
+		function (hWinEventHook, event, hwnd, idObject, idChild, idEventThread, dwmsEventTime) {
+			const windowTitleLength = user32.GetWindowTextLengthW(hwnd)
+			const bufferSize = windowTitleLength * 2 + 4
+			const titleBuffer = Buffer.alloc(bufferSize)
+			user32.GetWindowTextW(hwnd, titleBuffer, bufferSize)
+			const titleText = ref.reinterpretUntilZeros(titleBuffer, wchar.size)
+			const finallyWindowTitle = wchar.toString(titleText)
+			console.log("umm", finallyWindowTitle)
+		}
+	)
+
+	user32.SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, null, pfnWinEventProc,
+		0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKPIOWNPROCESS)
+
+	let res = getMessage()
+	while(res !== 0) {
+		switch (res) {
+			case -1:
+				console.log("Invalid GetMessageA arguments or something!");
+				break
+			default:
+				console.log("Got a message!")
+		}
+		res = getMessage()
+	}
+}
+
+childFunction();
+
+
+
+// import {} from "electron";
+
+class IndexDatabase {
+	constructor() {
+		let request = window.indexedDB.open("bayDB");
+		this.db = null;
+		request.onupgradeneeded = () => {
+			const db = request.result;
+			const objs = db.objectStoreNames;
+			if (!objs.contains("config")) {
+				const store = db.createObjectStore("config", {keyPath: "key"});
+				store.createIndex("by_key", "key", {unique: true});
+				store.put({key: "window", value: [1400, 800]});
+			}
+			if(!objs.contains("screenLogs")) {
+				const store = db.createObjectStore("screenLogs", {keyPath: "date"})
+				store.createIndex("by_date", "date", {unique: true});
+				store.put({"date": new Date(), "total": 0, "sessions": [{type: 1, epoch: Date.now()}]});
+			}
+
+		}
+		request.onsuccess = () => {
+			this.db = request.result;
+		}
+	}
+}
+
+export default IndexDatabase;
+
+
+
+    activeWindow.getOpenWindows().then(console.log);
+    activeWindow.getOpenWindows({
+
+    })
+
+
+
+
+
+
+
+ FUN JS
+ import {store} from "./Store";
+ import {logger} from "./Logger";
+ import {app} from "electron";
+ import DB from "./DB";
+
+
+ // function LogScreenTime(on, epoch=null) {
+ //     const screenTime = store.getObj('screenTime');
+ //     const todayDate = getDate();
+ //     const screenLogs = screenTime[todayDate] || [];
+ //
+ //     if(screenLogs.length && on === "start-up" && screenLogs[screenLogs.length - 1].on === "suspend") {
+ //         return;
+ //     }
+ //
+ //     let obj = {
+ //         on: on,
+ //         date: epoch || Date.now()
+ //     };
+ //
+ //     let currentST = screenTime.currentST || 0;
+ //
+ //     if(screenLogs.length === 0) {
+ //         if(obj.on === "suspend") {
+ //             const date = new Date();
+ //             currentST += date.getMilliseconds();
+ //         }
+ //     } else {
+ //         let lastObj = screenLogs[screenLogs.length - 1];
+ //         if(lastObj.on === "suspend") {
+ //             if(obj.on === "suspend") {
+ //                 while (screenLogs.length && screenLogs[screenLogs.length - 1].on === "suspend") {
+ //                     screenLogs.pop();
+ //                 }
+ //                 if(screenLogs.length === 0) {
+ //                     const date = new Date();
+ //                     currentST += date.getMilliseconds();
+ //                 } else {
+ //                     lastObj = screenLogs[screenLogs.length - 1];
+ //                     currentST += (obj.date - lastObj.date);
+ //                 }
+ //             }
+ //         } else {
+ //             if(obj.on === "suspend") {
+ //                 currentST += (obj.date - lastObj.date);
+ //             } else {
+ //                 obj = null;
+ //             }
+ //         }
+ //     }
+ //
+ //     if(obj)
+ //         screenLogs.push(obj);
+ //
+ //     screenTime[todayDate] = screenLogs;
+ //     screenTime.currentST = currentST;
+ //
+ //     store.setObj('screenTime', screenTime);
+ //
+ // }
+
+
+
+
+ // function LogApplicationChange(chunk) {
+ //     chunk = chunk.toString().split('\n').map(r => r.trim()).filter(r => r.length).pop()
+ //     try {
+ //         chunk = JSON.parse(chunk);
+ //         const appUsage = store.getObj('appUsage');
+ //         const todayUsage = appUsage[getDate()] || {};
+ //         let lastProc = appUsage._;
+ //
+ //         if(lastProc && lastProc.process && lastProc.epoch) {
+ //             let then = getDate(lastProc.epoch);
+ //             let now = getDate();
+ //
+ //             if(then !== now) {
+ //                 const thenUsage = appUsage[then] || {};
+ //                 thenUsage[lastProc.process] = Math.abs((thenUsage[lastProc.process] || 0) + ((getEpoch(lastProc.epoch) + (36e5 * 24)) - lastProc.epoch));
+ //
+ //                 appUsage[then] = thenUsage;
+ //             } else {
+ //                 todayUsage[lastProc.process] = Math.abs((todayUsage[lastProc.process] || 0) + (Date.now() - lastProc.epoch));
+ //
+ //                 appUsage[now] = todayUsage;
+ //             }
+ //         }
+ //
+ //         lastProc = {process: chunk.process, epoch: Date.now()};
+ //         appUsage._ = lastProc;
+ //
+ //         store.setObj('appUsage', appUsage);
+ //     } catch (e) {
+ //         console.log(e);
+ //         logger.log(e);
+ //     }
+ // }
+
+ // function GetAppUsages() {
+ //     const appUsage = store.getObj('appUsage');
+ //     const todayUsage = appUsage[getDate()] || {};
+ //     return Object.keys(todayUsage).map((k) => {
+ //         return {
+ //             name: k,
+ //             path: k,
+ //             usage: todayUsage[k]
+ //         }
+ //     })
+ // }
+
+ export { getDate, getEpoch };
+
+ export class GetAppUsages {
+ }
+
+
+
+
+
+
+
+
+
+ STORE JS
+ import * as fs from "fs";
+ import {app} from 'electron';
+ import path from "path";
+ import {logger} from "./Logger";
+
+ class Store {
+     constructor(defaults) {
+         this.logger = logger;
+         this.defaults = defaults;
+         this.db = path.resolve(app.getPath('userData'), "reactronStore.json");
+         if(!fs.existsSync(this.db))
+             fs.writeFileSync(this.db, JSON.stringify(this.defaults || {}, null, 4), {
+                 encoding: "utf-8"
+             });
+
+         this.updateCallback = {};
+     }
+
+     subscribe(key, callback) {
+         if(key in this.updateCallback) {
+             this.updateCallback[key].push(callback);
+         }
+     }
+
+     read() {
+         let data;
+         try {
+             data = JSON.parse(fs.readFileSync(this.db, {encoding: "utf-8"}));
+         } catch (e) {
+             this.logger.log(e);
+             data = this.defaults || {}
+         }
+         return data;
+     }
+
+     write(data) {
+         try {
+             fs.writeFileSync(this.db, JSON.stringify(data, null, 4), {
+                 encoding: "utf-8"
+             });
+             return true;
+         } catch (e) {
+             this.logger.log(e)
+             return false;
+         }
+     }
+
+     getObj(key, def= {}) {
+         try {
+             return this.read()[key] || def;
+         } catch (e) {
+             this.logger.log(e);
+             return def;
+         }
+     }
+
+     setObj(key, value) {
+         try {
+             const data = this.read();
+             data[key] = value;
+             this.write(data);
+
+             for(const fun of this.updateCallback[key] || []) {
+                 console.log(fun);
+                 fun();
+             }
+
+             return true;
+         } catch (e) {
+             this.logger.log(e);
+             return false;
+         }
+     }
+ }
+
+
+ const store = new Store({
+     windowSize: [1400, 800],
+     screenTime: {},
+     appUsage: {
+         _: {
+             process: null,
+             epoch: null
+         }
+     }
+ });
+
+ export {Store, store};
+
+ ---------------------------------------------------------------------------------------
+ test.js
+
+ const Database = require("better-sqlite3");
+ const fs = require("fs");
+ const db = new Database("C:/Users/ishwa/AppData/Roaming/reactron-project/database.db");
+ const file = "C:/Users/ishwa/AppData/Roaming/reactron-project/reactronStore.json";
+ const store = JSON.parse(fs.readFileSync(file));
+ Object.keys(store.screenTime).map((k) => {
+ 	let insert = db.prepare(`INSERT INTO screenTime VALUES (?, ?);`);
+ 	if(typeof store.screenTime[k] !== "number")
+ 	store.screenTime[k].map((log) => {
+ 		console.log(log);
+ 		insert.run(log.date, log.on === "resume" ? 1 : 0);
+ 	});
+
+ });
+ db.close();
+
+ ------------------------------------------------------------------------------------------------
