@@ -5,13 +5,13 @@ function Blinker() {
 	const [status, setStatus] = useState(false);
 
 	const handleState = () => {
-		window.electronAPI.toConfig('blinker', !status, null).then(r => {
+		window.electronAPI.toConfig('Blinker', !status, null).then(r => {
 			setStatus(Boolean(JSON.parse(r).status));
 		});
 	}
 
 	useEffect(() => {
-		window.electronAPI.getConfig('blinker').then((r) => {
+		window.electronAPI.getConfig('Blinker').then((r) => {
 			if (r) {
 				setStatus(Boolean(JSON.parse(r).status));
 			}
@@ -51,7 +51,7 @@ function Blinker() {
 								to maintain the natural eye blinking rate.<br/>
 								Blinker uses visual cues such as showing an eye emoji at the center of your screen (default).
 							</span>
-							<button onClick={() => handleState()}
+							<button onClick={handleState}
 									className={`m-4 flex items-center ${status ? 'justify-end' : 'justify-start'} duration-300 transition-all ease-in p-1 border-2 ${status ? 'border-gray-600 dark:border-[#8fbc8f]' : 'border-gray-600'} rounded-full`}
 									style={{aspectRatio: "2/1", height: "1.75rem"}}>
 								<div

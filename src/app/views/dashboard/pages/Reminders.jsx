@@ -2,16 +2,18 @@ import React, {useEffect, useState} from "react";
 
 function Feat202020() {
 	const [ft2020, setFt2020] = useState(false);
+	const [config, setConfig] = useState(null);
 
 	const handleState = () => {
-		window.electronAPI.toConfig('20-20-20', !ft2020, null).then(r => {
+		window.electronAPI.toConfig('R202020', !ft2020, config).then(r => {
 			setFt2020(Boolean(JSON.parse(r).status));
 		});
 	}
 
 	useEffect(() => {
-		window.electronAPI.getConfig('20-20-20').then(r => {
+		window.electronAPI.getConfig('R202020').then(r => {
 			if (r) {
+				setConfig(JSON.parse(r).config);
 				setFt2020(Boolean(JSON.parse(r).status));
 			}
 		})
@@ -33,7 +35,7 @@ function Feat202020() {
 							</span>
 					</div>
 				</div>
-				<button onClick={() => handleState('20-20-20')}
+				<button onClick={handleState}
 						className={`m-4 flex items-center ${ft2020 ? 'justify-end' : 'justify-start'} duration-300 transition-all ease-in p-1 border-2 ${ft2020 ? 'border-gray-600 dark:border-[#8fbc8f]' : 'border-gray-600'} rounded-full`}
 						style={{aspectRatio: "2/1", height: "1.75rem"}}>
 					<div
@@ -53,7 +55,7 @@ function FeatWaterReminder() {
 	const handleChange = () => {
 		if(Boolean(reminderType) && Boolean(duration)) {
 			window.electronAPI.toConfig(
-				'water',
+				'WaterReminder',
 				!status,
 				!status ? JSON.stringify({type: reminderType, duration: duration}) : null
 			).then(loadConfig);
@@ -64,9 +66,9 @@ function FeatWaterReminder() {
 	const loadConfig = (r) => {
 		if (r) {
 			const json = JSON.parse(r);
-			const options = JSON.parse(json.options);
-			if(options) {
-				setReminderType(options.type); setDuration(options.duration);
+			const config = JSON.parse(json.config);
+			if(config) {
+				setReminderType(config.type); setDuration(config.duration);
 			} else {
 				setReminderType(''); setDuration(0);
 			}
@@ -75,7 +77,7 @@ function FeatWaterReminder() {
 	}
 
 	useEffect(() => {
-		window.electronAPI.getConfig('water').then(loadConfig)}, []);0
+		window.electronAPI.getConfig('WaterReminder').then(loadConfig)}, []);
 
 	useEffect(() => {
 		document.getElementById('waterBtn').disabled = !(Boolean(reminderType) && Boolean(duration));

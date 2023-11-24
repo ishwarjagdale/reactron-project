@@ -4,6 +4,7 @@ import {updateElectronApp} from "update-electron-app";
 import Database, {getEpoch} from "./database";
 import Modules from "./modules";
 import FeatureConfigurations from "./modules/FeatureConfigurations";
+import Features from "./features";
 
 
 /**
@@ -114,6 +115,13 @@ app.on('ready', () => {
     for(let key in Modules) {
         if(Modules[key].hasOwnProperty('start')) {
             Modules[key].start();
+            console.log(`MODULE: ${key} started!`)
+        }
+    }
+
+    for(let key in Features) {
+        if(Features[key].hasOwnProperty('start')) {
+            Features[key].start();
             console.log(`FEATURE: ${key} started!`)
         }
     }
@@ -171,33 +179,7 @@ app.on('ready', () => {
 
     ipcMain.handle('toConfig', (_event, key, status, options) => {
         const res = FeatureConfigurations.set({key, status: status ? 1 : 0, config: options});
-        if(res) {
-            // switch (key) {
-            //     case "blinker": {
-            //         Blinker.status = status;
-            //         if (status) {
-            //             Blinker.run();
-            //         }
-            //         break;
-            //     }
-            //     case "20-20-20": {
-            //         R202020.status = status;
-            //         if (status) {
-            //             R202020.run();
-            //         }
-            //         break;
-            //     }
-            //     case "water": {
-            //         WaterReminder.status = status;
-            //         if (status) {
-            //             WaterReminder.run();
-            //         } else {
-            //             WaterReminder.end();
-            //         }
-            //         break;
-            //     }
-            // }
-        }
+        if(res) Features[key].update();
 
         return JSON.stringify(FeatureConfigurations.get(key));
     })
@@ -231,10 +213,14 @@ app.on('ready', () => {
         Modules.Sessions.end();
         Modules.AppUsages.end();
 
+        Features.R202020.end();
+
     });
     powerMonitor.on('unlock-screen', () => {
         Modules.Sessions.start();
         Modules.AppUsages.start();
+
+        Features.R202020.start();
 
         mainWindow?.webContents.send('updateScreenTime',
             JSON.stringify(
