@@ -16,6 +16,8 @@ import Overview from "./views/dashboard/pages/Overview.jsx";
 import Settings from "./views/dashboard/pages/Settings.jsx";
 import Blinker from "./views/dashboard/pages/Blinker.jsx";
 import Reminders from "./views/dashboard/pages/Reminders.jsx";
+import Startup from "./views/Startup.jsx";
+import Focus from "./views/dashboard/pages/Focus.jsx";
 
 function WindowLayout() {
 
@@ -43,7 +45,7 @@ function WindowLayout() {
 
                 <div className={"flex items-center"}>
                     {
-                        location.pathname !== "/" && <Link to={"/"} className={"mx-3 material-icons hover:text-blue-400 rounded-full"}>keyboard_double_arrow_left</Link>
+                        !(["/", "/startup"].includes(location.pathname)) && <Link to={"/"} className={"mx-3 material-icons hover:text-blue-400 rounded-full"}>keyboard_double_arrow_left</Link>
                     }
                     <div className={"hidden items-center"}>
                         {/*  Window Icon  */}
@@ -97,22 +99,22 @@ const router = createMemoryRouter([
                     },
                     {
                         path: "/dashboard/focus",
-                        element: <></>
-                    },
-                    {
-                        path: "/dashboard/todos",
-                        element: <></>
+                        element: <Focus />
                     },
                     {
                         path: "/dashboard/settings",
                         element: <Settings />
                     }
                 ]
+            },
+            {
+                path: "/startup",
+                element: <Startup />
             }
         ]
     }
 ], {
-
+    initialEntries: ["/startup", "/dashboard/focus"]
 });
 
 root.render(<RouterProvider router={router} />)

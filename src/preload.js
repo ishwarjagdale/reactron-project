@@ -28,7 +28,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
         return ipcRenderer.invoke('toConfig', key, status, options);
     },
 
+    toStore: (key, value) => {
+        return ipcRenderer.invoke('toStore', key, value);
+    },
+
+    fromStore: (key) => {
+        return ipcRenderer.invoke('fromStore', key);
+    },
+
     getAppVersion: () => {
         return ipcRenderer.invoke('appVersion');
+    },
+
+    getFileIcon: (path) => {
+        return ipcRenderer.invoke('fileIcon', path);
     }
 })

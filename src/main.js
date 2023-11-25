@@ -5,6 +5,7 @@ import Database, {getEpoch} from "./database";
 import Modules from "./modules";
 import FeatureConfigurations from "./modules/FeatureConfigurations";
 import Features from "./features";
+import KeyStore from "./modules/KeyStore";
 
 
 /**
@@ -179,13 +180,30 @@ app.on('ready', () => {
 
     ipcMain.handle('toConfig', (_event, key, status, options) => {
         const res = FeatureConfigurations.set({key, status: status ? 1 : 0, config: options});
-        if(res) Features[key].update();
+        if(res) Features[key]?.update();
 
         return JSON.stringify(FeatureConfigurations.get(key));
     })
 
     ipcMain.handle('appVersion', () => {
         return app.getVersion();
+    })
+
+    ipcMain.handle('toStore', (evt, key, value) => {
+        if(key && value) {
+            KeyStore.set(key, value);
+        }
+    })
+
+    ipcMain.handle('fromStore', (evt, key) => {
+        if(key) {
+            return KeyStore.get(key);
+        }
+    })
+
+    ipcMain.handle('fileIcon', async (evt, path) => {
+        const icon = await app.getFileIcon(path);
+        return icon.toDataURL();
     })
 
     // if tray is not created then create one
