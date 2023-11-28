@@ -4,7 +4,7 @@ import "../static/fonts/material-icons.css"; // material icons stylesheet
 import "../static/fonts/open-sans.css"; // open sans font stylesheet
 import "../static/css/main.css"; // base stylesheet
 import "../static/css/tailwind.css";
-import {Link} from "react-router-dom"; // tailwind stylesheet
+import {Link, useLocation} from "react-router-dom"; // tailwind stylesheet
 
 
 function WelcomePage() {
@@ -12,6 +12,9 @@ function WelcomePage() {
 	const [screenTime, setScreenTime] = useState({
 		hours: 0, minutes: 0, seconds: 0
 	});
+	const [userName, setUserName] = useState("user");
+
+	const location = useLocation();
 
 	const updateScreenTIme = (_event, value) => {
 		setScreenTime(JSON.parse(value));
@@ -46,6 +49,14 @@ function WelcomePage() {
 
 	}, [screenTime]);
 
+	useEffect(() => {
+		window.electronAPI.fromStore('username').then((r) => {
+			if(r) {
+				setUserName(r.value);
+			}
+		})
+	}, []);
+
 	let greet;
 	const hour = new Date().getHours();
 	if(hour >= 5 && hour < 12) {
@@ -78,11 +89,13 @@ function WelcomePage() {
 					</div>
 					<span className={"p-2 text-md text-lightSecondary dark:text-darkSecondary"}>Total screen time tracked today</span>
 				</div>
-				<div className={"flex flex-col items-center p-4"}>
-					<span className={"text-lightPrimary dark:text-darkPrimary text-xl p-1"}>{ greet }, <b className={"font-bold"}>Ishwar</b></span>
-					<span className={"text-lightSecondary dark:text-darkSecondary text-sm"}>Let's see how you're doing</span>
-					<Link to={"/dashboard"} className="material-icons pt-8 text-lightSecondary dark:text-darkSecondary hover:text-black hover:dark:text-blue-400 pb-2">keyboard_double_arrow_down</Link>
-				</div>
+				{
+					location.pathname === "/" && <div className={"flex flex-col items-center p-4"}>
+						<span className={"text-lightPrimary dark:text-darkPrimary text-xl p-1"}>{ greet }, <b className={"font-bold"}>{userName}</b></span>
+						<span className={"text-lightSecondary dark:text-darkSecondary text-sm"}>Let's see how you're doing</span>
+						<Link to={"/dashboard"} className="material-icons pt-8 text-lightSecondary dark:text-darkSecondary hover:text-black hover:dark:text-blue-400 pb-2">keyboard_double_arrow_down</Link>
+					</div>
+				}
 			</div>
 		</div>
 	)

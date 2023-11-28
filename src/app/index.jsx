@@ -82,6 +82,10 @@ const router = createMemoryRouter([
                 element: <WelcomePage />
             },
             {
+                path: "/focus",
+                element: <WelcomePage />
+            },
+            {
                 path: "/dashboard",
                 element: <Dashboard />,
                 children: [

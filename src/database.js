@@ -16,6 +16,9 @@ export function getEpoch(date = null) {
 }
 
 class Database {
+    // acting as a window manager
+    static windows = {};
+
     static instance = null;
 
     constructor(databasePath = "") {

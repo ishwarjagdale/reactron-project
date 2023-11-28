@@ -30,7 +30,7 @@ export default class R202020 {
 			R202020.eventID = setInterval(() => {
 				R202020.notification.body = R202020.messages[Date.now() % R202020.messages.length];
 				R202020.notification.show();
-			}, 1000);
+			}, 5000);
 
 		}
 

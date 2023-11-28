@@ -111,7 +111,7 @@ function FeatWaterReminder() {
 							<option value={0}>Duration</option>
 							{
 								[15 * 60, 30 * 60, 60 * 60, 120 * 60].map((k, index) =>
-									<option key={index.toString()} value={k * 1000}>
+									<option key={index.toString()} value={k}>
 										{ reminderType === '' ? '' : reminderType === 'r' ? 'in' : 'after' } { k / 60 < 60 ? `${k / 60}mins` : `${k / 3600}hrs` }
 									</option>
 								)

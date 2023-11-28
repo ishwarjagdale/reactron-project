@@ -19,7 +19,7 @@ const createWindow = () => {
     }
 
     // Create the browser window.
-    mainWindow = new BrowserWindow({
+    Database.windows.main = mainWindow = new BrowserWindow({
         width: 1400,
         height: 800,
         frame: false,
@@ -263,5 +263,4 @@ app.on('activate', () => {
 
 app.on('will-quit', () => {
     Modules.AppUsages.end();
-    Modules.Sessions.updateSession();
 })

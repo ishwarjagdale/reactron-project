@@ -17,6 +17,7 @@ export default class AppUsages {
 
     static appReader = null;
     static currentApp = null;
+    static callbacks = {};
 
     static getAppUsages(path) {
         try {
@@ -99,11 +100,16 @@ export default class AppUsages {
                     .filter(r => r.length).pop();
                 const data = chunk ? JSON.parse(chunk) : undefined;
 
-                if (data)
+                if (data) {
                     AppUsages.currentApp = {
                         path: data.process, appName: data.name, title: data.text,
                         date: getEpoch(Date.now()), duration: Date.now()
                     }
+
+                    Object.values(AppUsages.callbacks).forEach((cb) => cb())
+
+                }
+
                 else
                     AppUsages.currentApp = null;
 
