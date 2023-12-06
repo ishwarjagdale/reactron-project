@@ -1,7 +1,7 @@
 module.exports = {
 	packagerConfig: {
 		asar: true,
-		extraResource: ["./src/static/"]
+		extraResource: ["./src/app/static/"]
 	},
 	rebuildConfig: {},
 	makers: [
@@ -21,6 +21,13 @@ module.exports = {
 			name: '@electron-forge/maker-rpm',
 			config: {},
 		},
+		{
+			name: "@electron-forge/maker-dmg",
+			config: {
+				background: "./src/static/img/electron.png",
+				format: "ULFO"
+			}
+		}
 	],
 	plugins: [
 		{
@@ -35,8 +42,8 @@ module.exports = {
 					config: './webpack.renderer.config.js',
 					entryPoints: [
 						{
-							html: './src/index.html',
-							js: './src/renderer.js',
+							html: './src/app/index.html',
+							js: './src/app/index.jsx',
 							name: 'main_window',
 							preload: {
 								js: './src/preload.js',

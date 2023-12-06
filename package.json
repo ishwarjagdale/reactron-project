@@ -1,8 +1,8 @@
 {
   "name": "reactron-project",
   "productName": "reactron-project",
-  "version": "1.0.1",
-  "description": "Digital Well-Being and Desktop Companion",
+  "version": "1.1.1",
+  "description": "Digital Wellbeing and Desktop Companion",
   "repository": {
     "type": "git",
     "url": "https://github.com/ishwarjagdale/reactron-project"
@@ -42,8 +42,9 @@
     "tailwindcss": "^3.3.3"
   },
   "dependencies": {
+    "@electron-forge/maker-dmg": "^6.4.2",
     "autoprefixer": "^10.4.15",
-    "better-sqlite3": "^8.6.0",
+    "better-sqlite3": "^9.1.1",
     "electron-builder": "^24.6.4",
     "electron-squirrel-startup": "^1.0.0",
     "postcss-loader": "^7.3.3",

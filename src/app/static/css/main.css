@@ -1,0 +1,144 @@
+:root {
+    /*--dark-background: #1e2124;*/
+    --light-background: #fafafa;
+    --light-secondary-background: ;
+    --light-primary-text: #222831;
+    --light-secondary-text: #393E46;
+
+    --dark-background: #0e1013;
+    --dark-secondary-background: #1b1d20;
+    --dark-primary-text: #f1f1f1;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+*::-webkit-scrollbar {
+    width: 0.4rem;
+}
+
+*::-webkit-scrollbar-track {
+    display: none;
+}
+
+*::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
+    -webkit-user-select: none;
+}
+
+#root {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    cursor: default;
+    -webkit-user-select: none;
+}
+
+@media (prefers-color-scheme: light) {
+    #root {
+        background: var(--light-background); /* TODO: select color for light mode */
+        color: var(--light-primary-text);
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    #root {
+        background: var(--dark-background);
+        color: var(--dark-primary-text);
+    }
+
+
+    *::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.4);
+    }
+}
+
+.draggable {
+    -webkit-app-region: drag;
+}
+
+.draggable > * {
+    -webkit-app-region: no-drag;
+}
+.accent-border {
+    position: relative;
+}
+.accent-border::after {
+    width: 40%;
+    display: none;
+    height: 4px;
+    border-radius: 2px;
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+@media (prefers-color-scheme: light) {
+    .accent-border::after {
+        background-color: #1f1f1f;
+    }
+
+    .session {
+        opacity: 75%;
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .session > hr {
+        opacity: 100%;
+    }
+
+    .session:hover {
+        opacity: 100%;
+    }
+
+    .donut-back {
+        stroke: rgba(0, 0, 0, 0.1);
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .accent-border::after {
+        background-color: cornflowerblue;
+    }
+
+    .session {
+        opacity: 100%;
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .session:hover {
+        opacity: 50%;
+    }
+
+    .session:hover > hr {
+        opacity: 100%;
+    }
+
+    .donut-back {
+        stroke: rgba(255, 255, 255, 0.05);
+    }
+}
+
+.but {
+    @apply h-full bg-gray-100 dark:bg-darkSecBG text-lightSecondary dark:text-darkSecondary;
+}
+.hover-but {
+    @apply hover:bg-gray-200 p-1 px-4 m-0 hover:dark:bg-darkBG;
+}
+
+.waves {
+    background-image: url("../img/waves.png");
+}
