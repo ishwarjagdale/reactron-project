@@ -1,7 +1,7 @@
 module.exports = {
 	packagerConfig: {
 		asar: true,
-		extraResource: ["./src/static/"]
+		extraResource: ["./src/app/static/"]
 	},
 	rebuildConfig: {},
 	makers: [

@@ -26,7 +26,7 @@ export default class Blinker {
             window.center();
             window.hide();
             window.setIgnoreMouseEvents(true);
-            const imgPath = path.join(process.env.NODE_ENV === "development" ? "./src/" : process.resourcesPath, "app/static/svg/eye.svg");
+            const imgPath = path.join(process.env.NODE_ENV === "development" ? "./src/app" : process.resourcesPath, "static/svg/eye.svg");
             window.loadFile(imgPath).then(null);
 
             if(Blinker.eventID) clearInterval(Blinker.eventID);

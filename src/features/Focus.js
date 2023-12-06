@@ -51,7 +51,7 @@ export default class Focus {
             window.loadURL("http://localhost:3000/main_window/focus").then(() => {
                 window.show();
                 AppUsages.callbacks.focus = handler;
-                Database.windows.main.hide();
+                // Database.windows.main.hide();
             });
 
             window.on('close', () => {
