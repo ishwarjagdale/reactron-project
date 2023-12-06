@@ -38,7 +38,7 @@ const createWindow = () => {
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY).then(null);
 
     // Open the DevTools.
-    mainWindow.webContents.openDevTools({mode: "detach"});
+    // mainWindow.webContents.openDevTools({mode: "detach"});
 };
 
 
@@ -49,7 +49,7 @@ const createTray = () => {
 
     const iconPath = process.env.NODE_ENV === "development" ?
         path.resolve('src/app/static/img/electron.png') :
-        path.resolve(process.resourcesPath, 'app/static/img/electron.png');
+        path.resolve(process.resourcesPath, 'static/img/electron.png');
 
     const icon = nativeImage.createFromPath(iconPath).resize({width: 22});
     tray = new Tray(icon);

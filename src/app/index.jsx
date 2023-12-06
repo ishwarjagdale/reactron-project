@@ -117,8 +117,6 @@ const router = createMemoryRouter([
             }
         ]
     }
-], {
-    initialEntries: ["/startup", "/dashboard/focus"]
-});
+]);
 
 root.render(<RouterProvider router={router} />)

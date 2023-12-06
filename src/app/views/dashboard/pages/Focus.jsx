@@ -8,7 +8,7 @@ function Focus() {
     });
     const [status, setStatus] = useState(false);
     const [timer, setTimer] = useState(0);
-    const [password, setPassword] = useState(null);
+    const [password, setPassword] = useState("");
     const [askPass, setAskPass] = useState(false);
     const [inpPass, setInPass] = useState("");
     const [wrongPass, setWrongPass] = useState(false);
@@ -18,7 +18,7 @@ function Focus() {
     }, []);
 
     useEffect(() => {
-        window.electronAPI.fromStore('password').then(res => {
+        window.electronAPI.fromStore('sudoPass').then(res => {
             if(res) setPassword(res.value);
         })
     }, []);
@@ -77,16 +77,23 @@ function Focus() {
         if(status) {
             if (!override)
                 return setAskPass(true);
+            else {
+                console.log(!status)
+                setConfig({ ...config, duration: 6e5 });
+                window.electronAPI.toConfig('Focus', !status, JSON.stringify(config)).then(load)
+            }
+        } else {
+            console.log(!status)
+            setConfig({ ...config, duration: 6e5 });
+            window.electronAPI.toConfig('Focus', !status, JSON.stringify(config)).then(load)
         }
-        console.log(!status)
-        setConfig({ ...config, duration: 6e5 });
-        window.electronAPI.toConfig('Focus', !status, JSON.stringify(config)).then(load)
+
     }
 
     const handleSubmit = (evt) => {
         evt.preventDefault();
         console.log(inpPass, password, inpPass === password)
-        if(inpPass === password) return start(true);
+        if(inpPass === password) start(true);
         else {
             setWrongPass(true);
         }
@@ -124,7 +131,7 @@ function Focus() {
                                         <button onClick={start}
                                                 className={"px-4 z-10 py-3 bg-darkSecBG h-fit rounded-md absolute"}>
                                             {
-                                                status ? "Stop" : "Start for 30 minute"
+                                                status ? "Stop" : "Start for 1 minute"
                                             }
                                         </button>
                                 }
@@ -135,9 +142,11 @@ function Focus() {
                                     <circle cx={"50%"} cy={"50%"} r={`30%`} stroke={"dodgerblue"} fill={"none"} pathLength={100} strokeDasharray={`${(timer / config.duration) * 100} 100`}
                                             strokeLinecap={"round"} strokeLinejoin={"round"}
                                             strokeWidth={'2%'}/>
-                                    <circle cx={"50%"} cy={"50%"} r={`30%`} stroke={"black"} fill={"none"} pathLength={100} strokeDasharray={`0 100`}
-                                            strokeLinecap={"square"} strokeLinejoin={"round"}
-                                            strokeWidth={'2%'} />
+                                    {
+                                        !status && <circle cx={"50%"} cy={"50%"} r={`30%`} stroke={"black"} fill={"none"} pathLength={100} strokeDasharray={`0 100`}
+                                                          strokeLinecap={"square"} strokeLinejoin={"round"}
+                                                          strokeWidth={'2%'} />
+                                    }
                                     <rect width={10} height={2} fill={"gray"} x={"80%"} y={"50%"}  />
                                 </svg>
 
