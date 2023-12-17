@@ -11,7 +11,7 @@ function Dashboard() {
 		{mtIcon: "data_usage", text: "Overview", url: "overview"},
 		{mtIcon: "visibility", text: "Blinker", url: "blinker"},
 		{mtIcon: "notifications_active", text: "Reminders", url: "reminders"},
-		{mtIcon: "track_changes", text: "Focus", url: "focus"},
+		// {mtIcon: "track_changes", text: "Focus", url: "focus"},
 		{mtIcon: "settings", text: "Settings", url: "settings"}
 	];
 

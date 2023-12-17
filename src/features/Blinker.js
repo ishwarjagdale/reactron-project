@@ -10,8 +10,8 @@ export default class Blinker {
     static eventID = null;
 
     static start() {
-        let raw = FeatureConfigurations.get('Blinker');
-        raw.config = JSON.parse(raw.config);
+        let raw = FeatureConfigurations.get('Blinker') || {};
+        raw.config = raw && raw.config ? JSON.parse(raw.config) : {};
         const res = Blinker.res = raw;
 
         if (res && res.status) {

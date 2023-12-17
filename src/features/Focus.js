@@ -9,10 +9,8 @@ export default class Focus {
     static window = null;
 
     static start() {
-        let raw = FeatureConfigurations.get('Focus');
-        if(raw) {
-            raw.config = JSON.parse(raw.config || "");
-        }
+        let raw = FeatureConfigurations.get('Focus') || {};
+        raw.config = raw && raw.config ? JSON.parse(raw.config) : {};
         const res = Focus.res = raw;
 
         if (res && res.status) {

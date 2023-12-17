@@ -16,8 +16,8 @@ export default class R202020 {
 	]
 
 	static start() {
-		let raw = FeatureConfigurations.get("R202020");
-		raw.config = JSON.parse(raw.config);
+		let raw = FeatureConfigurations.get("R202020") || {};
+		raw.config = raw && raw.config ? JSON.parse(raw.config) : {};
 		const res = R202020.res = raw;
 
 		if(res && res.status) {

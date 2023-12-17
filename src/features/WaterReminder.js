@@ -15,8 +15,8 @@ export default class WaterReminder {
 	]
 
 	static start() {
-		let raw = FeatureConfigurations.get("WaterReminder");
-		raw.config = JSON.parse(raw.config);
+		let raw = FeatureConfigurations.get("WaterReminder") || {};
+		raw.config = raw && raw.config ? JSON.parse(raw.config) : {};
 		const res = WaterReminder.res = raw;
 
 		if(res && res.status) {
