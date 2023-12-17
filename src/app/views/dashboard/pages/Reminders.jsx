@@ -30,7 +30,7 @@ function Feat202020() {
 								</span>
 					<div className={"flex items-start py-2 justify-between"}>
 							<span className={"text-sm block text-lightSecondary dark:text-darkSecondary"}>
-								Take regular breaks using the “20-20-20” rule: every 20 minutes, shift your eyes to look at an object at least 20 feet away, for at least 20 seconds.<br/>
+								Take regular breaks using the "20-20-20" rule: every 20 minutes, shift your eyes to look at an object at least 20 feet away, for at least 20 seconds.<br/>
 								Enable to get notified every 20 minutes.
 							</span>
 					</div>

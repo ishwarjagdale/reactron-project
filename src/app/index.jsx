@@ -117,6 +117,6 @@ const router = createMemoryRouter([
             }
         ]
     }
-]);
+], {initialEntries: ["/startup"]});
 
 root.render(<RouterProvider router={router} />)

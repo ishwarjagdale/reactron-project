@@ -7,7 +7,7 @@ function Startup() {
     const [name, setName] = useState("");
 
     const handleName = (evt) => {
-        setName(evt.target.value);
+        setName(evt.target.value.trim());
     }
 
     const handleSubmit = () => {

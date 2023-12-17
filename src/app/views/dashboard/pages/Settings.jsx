@@ -21,11 +21,11 @@ function Settings() {
 		setSaved(false);
 
 		window.electronAPI.toStore("username", username).then((res) => {
-			if(res) setUsername(res.value)
+			if(res) setUsername(res.value.trim().length ? res.value.trim() : null)
 		});
 
 		window.electronAPI.toStore("sudoPass", sudoPass).then((res) => {
-			if(res) setSudoPass(res.value)
+			if(res) setSudoPass(res.value.trim().length ? res.value.trim() : null)
 		});
 
 		setSaved(true);

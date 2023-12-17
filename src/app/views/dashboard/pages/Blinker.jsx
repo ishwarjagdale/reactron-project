@@ -40,7 +40,7 @@ function Blinker() {
 						<div
 							className={"w-full h-fit p-4 text-sm bg-gray-300 dark:bg-darkSecBG rounded-md text-lightSecondary dark:text-darkSecondary"}>
 							<span
-								className={"block"}>Humans normally blink about 15 times in one minute. However, studies show that we only blink about 5 to 7 times in a minute while using computers and other digital screen devices.<br/>Blinking is the eye’s way of getting the moisture it needs on its surface.
+								className={"block"}>Humans normally blink about 15 times in one minute. However, studies show that we only blink about 5 to 7 times in a minute while using computers and other digital screen devices.<br/>Blinking is the eye's way of getting the moisture it needs on its surface.
 								<br/><b className={"pt-2 block text-sm"}><i>~ American Academy of Opthamology</i></b>
 							</span>
 						</div>
